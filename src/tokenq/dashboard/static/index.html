@@ -1,0 +1,1273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>tokenq</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --fg: #1a1a1a;
+    --muted: #6b6b6b;
+    --card: #ffffff;
+    --border: #e8e8e8;
+    --accent: #0a7d2c;
+    --saved: #1f6feb;
+    --err: #c62828;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f10;
+      --fg: #e8e8e8;
+      --muted: #9a9a9a;
+      --card: #1a1a1c;
+      --border: #2a2a2c;
+      --accent: #4ade80;
+      --saved: #60a5fa;
+      --err: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    max-width: 960px;
+    margin: 32px auto;
+    color: var(--fg);
+    background: var(--bg);
+    padding: 0 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { margin-bottom: 28px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 960px) { .stats { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 720px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .card .h { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+  .card .v { font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .card .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .ok { color: var(--accent); }
+  .err { color: var(--err); }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; background: var(--border); color: var(--muted); }
+  footer { margin-top: 32px; color: var(--muted); font-size: 11px; text-align: center; }
+  code { background: var(--border); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  .chartwrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .chartwrap svg { display: block; width: 100%; height: 80px; }
+  .chartwrap.line svg { height: 240px; }
+  .chart-host { position: relative; }
+  .chart-tooltip {
+    position: absolute; display: none; z-index: 10;
+    background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 9px; font-size: 11px; min-width: 150px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-tooltip .row { display: flex; justify-content: space-between; gap: 14px; }
+  .chart-tooltip .row .lbl { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-tooltip .row .lbl .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .chart-tooltip .ts { font-weight: 600; margin-bottom: 4px; color: var(--fg); }
+  .chartwrap .axis { font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .chartwrap .axis .legend { display: inline-flex; gap: 12px; align-items: center; }
+  .chartwrap .axis .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  .report {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .report .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .report .controls label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .report .preset, .report button {
+    font-family: inherit; font-size: 12px;
+    background: var(--card); color: var(--fg);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; cursor: pointer;
+  }
+  .report .preset.active { border-color: var(--accent); color: var(--accent); }
+  .report button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .report input[type="datetime-local"] {
+    font-family: inherit; font-size: 12px;
+    background: var(--card); color: var(--fg);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 8px;
+  }
+  .report .preview { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .report .preview .pair { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 720px) { .report .preview .pair { grid-template-columns: repeat(2, 1fr); } }
+  .report .err-msg { color: var(--err); font-size: 12px; margin-top: 8px; }
+  .tabs {
+    display: flex; gap: 2px; margin: 18px 0 18px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .tab {
+    font-family: inherit; font-size: 13px;
+    background: transparent; color: var(--muted);
+    border: none; border-bottom: 2px solid transparent;
+    padding: 10px 14px; cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .tab:hover { color: var(--fg); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .activity-bar {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; height: 28px;
+    display: flex; margin-bottom: 12px;
+  }
+  .activity-bar .seg {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #fff; font-weight: 500;
+    overflow: hidden; min-width: 0;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>tokenq</h1>
+  <div class="sub">local proxy · <span id="window-label">last 24h</span> · auto-refresh</div>
+</header>
+
+<h3 style="margin-top:0">audit report</h3>
+<div class="report" id="report-panel">
+  <div class="controls">
+    <button class="preset" data-preset="1h">Last 1h</button>
+    <button class="preset" data-preset="24h">Last 24h</button>
+    <button class="preset" data-preset="7d">Last 7d</button>
+    <button class="preset" data-preset="30d">Last 30d</button>
+    <span style="color:var(--muted);font-size:12px">or FROM</span>
+    <input type="datetime-local" id="rep-from">
+    <span style="color:var(--muted);font-size:12px">TO</span>
+    <input type="datetime-local" id="rep-to">
+    <button id="rep-generate" class="primary">Generate</button>
+    <button id="rep-pdf">Download PDF</button>
+  </div>
+  <div style="color:var(--muted);font-size:12px;margin-top:6px">
+    applies to all tiles except recent requests &amp; skill compressions
+  </div>
+  <div id="rep-err" class="err-msg" style="display:none"></div>
+  <div id="rep-preview" class="preview" style="display:none"></div>
+</div>
+
+<div id="stats" class="stats">loading…</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="overview" role="tab">Overview</button>
+  <button class="tab" data-tab="spend" role="tab">Spend</button>
+  <button class="tab" data-tab="activity" role="tab">Activity</button>
+  <button class="tab" data-tab="pipeline" role="tab">Pipeline</button>
+</nav>
+
+<!-- ─────────────────── Overview ─────────────────── -->
+<section id="tab-overview" class="tab-panel active" role="tabpanel">
+  <h3 style="margin-top:8px">health · <span class="window-suffix">last 24h</span></h3>
+  <div id="health">loading…</div>
+
+  <h3>tokens sent vs input tokens skipped · <span class="window-suffix">last 24h</span></h3>
+  <div class="chartwrap line">
+    <div class="chart-host">
+      <div id="tokens-chart">loading…</div>
+      <div id="tokens-tooltip" class="chart-tooltip"></div>
+    </div>
+    <div class="axis">
+      <span id="tokens-chart-from">—</span>
+      <span class="legend">
+        <span class="sw" style="background:var(--accent)"></span> sent to anthropic
+        <span class="sw" style="background:var(--saved)"></span> skipped by tokenq
+      </span>
+      <span id="tokens-chart-to">—</span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3>cost over time · <span class="window-suffix">last 24h</span></h3>
+      <div class="chartwrap">
+        <div id="chart">loading…</div>
+        <div class="axis"><span id="chart-from">—</span><span id="chart-to">—</span></div>
+      </div>
+    </div>
+    <div>
+      <h3>savings breakdown · <span class="window-suffix">last 24h</span></h3>
+      <div id="savings_breakdown">loading…</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── Spend ─────────────────── -->
+<section id="tab-spend" class="tab-panel" role="tabpanel">
+  <h3 style="margin-top:8px">sessions · <span class="window-suffix">last 24h</span></h3>
+  <div id="sessions">loading…</div>
+
+  <h3>by project · <span class="window-suffix">last 24h</span></h3>
+  <div id="by_project">loading…</div>
+
+  <h3>by model · <span class="window-suffix">last 24h</span></h3>
+  <div id="by_model">loading…</div>
+
+  <h3>most expensive · <span class="window-suffix">last 24h</span></h3>
+  <div id="expensive">loading…</div>
+
+  <h3>recent requests</h3>
+  <div id="recent">loading…</div>
+</section>
+
+<!-- ─────────────────── Activity ─────────────────── -->
+<section id="tab-activity" class="tab-panel" role="tabpanel">
+  <h3 style="margin-top:8px">activity mix · <span class="window-suffix">last 24h</span></h3>
+  <div id="by_activity">loading…</div>
+
+  <h3>one-shot rate · <span class="window-suffix">last 24h</span></h3>
+  <div id="oneshot">loading…</div>
+
+  <div class="grid2">
+    <div>
+      <h3>core tools · <span class="window-suffix">last 24h</span></h3>
+      <div id="by_tool">loading…</div>
+    </div>
+    <div>
+      <h3>shell commands · <span class="window-suffix">last 24h</span></h3>
+      <div id="by_shell_command">loading…</div>
+    </div>
+  </div>
+
+  <h3>MCP servers · <span class="window-suffix">last 24h</span></h3>
+  <div id="by_mcp">loading…</div>
+</section>
+
+<!-- ─────────────────── Pipeline ─────────────────── -->
+<section id="tab-pipeline" class="tab-panel" role="tabpanel">
+  <h3 style="margin-top:8px">bandit router · <span class="window-suffix">last 24h</span></h3>
+  <div id="bandit_router">loading…</div>
+
+  <h3>transcript compactions · <span class="window-suffix">last 24h</span></h3>
+  <div id="compactions">loading…</div>
+
+  <h3>skill compressions · all time</h3>
+  <div id="skill_compressions">loading…</div>
+</section>
+
+<footer>
+  Set <code>ANTHROPIC_BASE_URL=http://127.0.0.1:8089</code> in your shell to route Claude Code through tokenq.
+</footer>
+
+<script>
+  const fmt = new Intl.NumberFormat();
+
+  const PRESET_LABELS = { "1h": "last 1h", "24h": "last 24h", "7d": "last 7d", "30d": "last 30d" };
+  const globalWindow = { preset: "24h", from: null, to: null };
+
+  function windowParams() {
+    const qs = new URLSearchParams();
+    if (globalWindow.from && globalWindow.to) {
+      qs.set("from", globalWindow.from);
+      qs.set("to", globalWindow.to);
+    } else {
+      qs.set("preset", globalWindow.preset || "24h");
+    }
+    return qs;
+  }
+
+  function withWindow(url) {
+    const sep = url.includes("?") ? "&" : "?";
+    return `${url}${sep}${windowParams().toString()}`;
+  }
+
+  function applyWindowLabels() {
+    let label;
+    if (globalWindow.from && globalWindow.to) {
+      const f = new Date(globalWindow.from * 1000);
+      const t = new Date(globalWindow.to * 1000);
+      label = `${f.toLocaleString()} → ${t.toLocaleString()}`;
+    } else {
+      label = PRESET_LABELS[globalWindow.preset] || "last 24h";
+    }
+    document.querySelectorAll(".window-suffix").forEach(el => { el.textContent = label; });
+    const hdr = document.getElementById("window-label");
+    if (hdr) hdr.textContent = label;
+  }
+
+  function setActivePreset(name) {
+    document.querySelectorAll("#report-panel .preset").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.preset === name);
+    });
+  }
+
+  async function refresh() {
+    try {
+      // /api/recent and /api/skill_compressions intentionally ignore the
+      // window: recent shows the latest 50 regardless, and skill compressions
+      // are all-time CLI rewrites.
+      const [s, r, ts, bm, ex, sc, cp, ses, bp, bt, hl, ba, os, bsc, bmcp] = await Promise.all([
+        fetch(withWindow("/api/stats")).then(x => x.json()),
+        fetch("/api/recent").then(x => x.json()),
+        fetch(withWindow("/api/timeseries")).then(x => x.json()),
+        fetch(withWindow("/api/by_model")).then(x => x.json()),
+        fetch(withWindow("/api/expensive")).then(x => x.json()),
+        fetch("/api/skill_compressions").then(x => x.json()),
+        fetch(withWindow("/api/compactions")).then(x => x.json()),
+        fetch(withWindow("/api/sessions")).then(x => x.json()),
+        fetch(withWindow("/api/by_project")).then(x => x.json()),
+        fetch(withWindow("/api/by_tool")).then(x => x.json()),
+        fetch(withWindow("/api/health")).then(x => x.json()),
+        fetch(withWindow("/api/by_activity")).then(x => x.json()),
+        fetch(withWindow("/api/oneshot")).then(x => x.json()),
+        fetch(withWindow("/api/by_shell_command")).then(x => x.json()),
+        fetch(withWindow("/api/by_mcp")).then(x => x.json()),
+      ]);
+      document.getElementById("stats").innerHTML = renderStats(s);
+      document.getElementById("recent").innerHTML = renderRecent(r);
+      renderTokensChart(ts);
+      renderChart(ts);
+      document.getElementById("savings_breakdown").innerHTML = renderSavingsBreakdown(s);
+      document.getElementById("bandit_router").innerHTML = renderBanditRouter(s);
+      document.getElementById("health").innerHTML = renderHealth(hl);
+      document.getElementById("sessions").innerHTML = renderSessions(ses);
+      document.getElementById("by_project").innerHTML = renderByProject(bp);
+      document.getElementById("by_tool").innerHTML = renderByTool(bt);
+      document.getElementById("by_model").innerHTML = renderByModel(bm);
+      document.getElementById("expensive").innerHTML = renderExpensive(ex);
+      document.getElementById("by_activity").innerHTML = renderByActivity(ba);
+      document.getElementById("oneshot").innerHTML = renderOneshot(os);
+      document.getElementById("by_shell_command").innerHTML = renderByShellCommand(bsc);
+      document.getElementById("by_mcp").innerHTML = renderByMcp(bmcp);
+      document.getElementById("compactions").innerHTML = renderCompactions(s, cp);
+      document.getElementById("skill_compressions").innerHTML = renderSkillCompressions(s, sc);
+    } catch (e) {
+      console.error("[tokenq dashboard] refresh failed:", e);
+    }
+  }
+
+  function renderStats(s) {
+    const tokens = (s.input_tokens || 0) + (s.output_tokens || 0);
+    const total = s.requests || 0;
+    const benefited = s.requests_with_savings || 0;
+    const fullHits = s.local_cache_hits || 0;
+    let hint;
+    if (total === 0) {
+      hint = "no requests yet";
+    } else {
+      hint = `${benefited}/${total} reqs benefited · ${fullHits} fully cached`;
+    }
+    return [
+      card(fmt.format(total), "requests"),
+      card(fmt.format(tokens), "tokens"),
+      card("$" + (s.spent_usd || 0).toFixed(2), "spent"),
+      card(fmt.format(s.saved_tokens || 0), "input tokens skipped", hint),
+      card(Math.round(s.avg_latency_ms || 0) + "ms", "avg latency"),
+    ].join("");
+  }
+
+  function card(v, l, hint) {
+    const hintHtml = hint ? `<div class="h">${hint}</div>` : "";
+    return `<div class="card"><div class="v">${v}</div><div class="l">${l}</div>${hintHtml}</div>`;
+  }
+
+  function renderRecent(rows) {
+    if (!rows.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No requests yet. Make one through Claude Code or curl.</p>';
+    }
+    const body = rows.map(x => `
+      <tr>
+        <td>${new Date(x.ts * 1000).toLocaleTimeString()}</td>
+        <td>${(x.model || "—").replace("claude-", "")}</td>
+        <td class="num">${fmt.format(x.input_tokens || 0)}</td>
+        <td class="num">${fmt.format(x.output_tokens || 0)}</td>
+        <td class="num">${fmt.format(x.cache_read_tokens || 0)}</td>
+        <td class="num">${x.latency_ms || 0}ms</td>
+        <td class="num">$${(x.estimated_cost_usd || 0).toFixed(4)}</td>
+        <td>${x.cached_locally ? '<span class="badge">cache</span>' : ""}${x.stream ? '<span class="badge">stream</span>' : ""}</td>
+        <td class="${(x.status_code || 0) >= 400 ? "err" : "ok"}">${x.status_code || ""}</td>
+      </tr>
+    `).join("");
+    return `<table>
+      <thead><tr>
+        <th>time</th><th>model</th>
+        <th class="num">in</th><th class="num">out</th>
+        <th class="num">cache rd</th>
+        <th class="num">latency</th><th class="num">cost</th>
+        <th>flags</th><th>status</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderSavingsBreakdown(s) {
+    const rows = [
+      {
+        source: "cache",
+        desc: "full short-circuit · no upstream call",
+        tokens: s.saved_by_cache || 0,
+        reqs: s.reqs_cache || 0,
+      },
+      {
+        source: "dedup",
+        desc: "duplicate tool_results stubbed",
+        tokens: s.saved_by_dedup || 0,
+        reqs: s.reqs_dedup || 0,
+      },
+      {
+        source: "compress",
+        desc: "tool_result trim + ANSI strip",
+        tokens: s.saved_by_compress || 0,
+        reqs: s.reqs_compress || 0,
+      },
+      {
+        source: "skills",
+        desc: "irrelevant skill descriptions trimmed",
+        tokens: s.saved_by_skills || 0,
+        reqs: s.reqs_skills || 0,
+        usd: 0,
+      },
+      {
+        source: "bigmemory",
+        desc: "tool_results recalled from memory store (est., capture-only v1)",
+        tokens: s.bigmemory_tokens_hit || 0,
+        reqs: s.bigmemory_items_hit || 0,
+      },
+      {
+        source: "bandit",
+        desc: "live tier downgrade (price differential)",
+        tokens: 0,
+        reqs: s.reqs_bandit || 0,
+        usd: s.saved_by_bandit_usd || 0,
+      },
+    ];
+    for (const r of rows) {
+      if (r.usd === undefined) r.usd = 0;
+    }
+    const totalTokens = rows.reduce((a, r) => a + r.tokens, 0);
+    const totalReqs = s.requests || 0;
+    const totalUsd = rows.reduce((a, r) => a + r.usd, 0);
+    if (!totalTokens && !totalReqs && !totalUsd) {
+      return '<p style="color:var(--muted);font-size:13px;">No savings yet.</p>';
+    }
+    const body = rows.map(r => {
+      const pct = totalTokens > 0 ? ((r.tokens / totalTokens) * 100).toFixed(0) : "0";
+      const reqShare = totalReqs > 0 ? ((r.reqs / totalReqs) * 100).toFixed(0) : "0";
+      const tokensCell = r.tokens > 0
+        ? `${fmt.format(r.tokens)}<div style="color:var(--muted);font-size:11px;margin-top:2px">${pct}%</div>`
+        : '<span style="color:var(--muted)">—</span>';
+      const usdCell = r.usd > 0
+        ? `$${r.usd.toFixed(4)}`
+        : '<span style="color:var(--muted)">—</span>';
+      return `
+        <tr>
+          <td><strong>${r.source}</strong><div style="color:var(--muted);font-size:11px;margin-top:2px">${r.desc}</div></td>
+          <td class="num">${fmt.format(r.reqs)}<div style="color:var(--muted);font-size:11px;margin-top:2px">${reqShare}%</div></td>
+          <td class="num">${tokensCell}</td>
+          <td class="num">${usdCell}</td>
+        </tr>`;
+    }).join("");
+    return `<table>
+      <thead><tr>
+        <th>source</th>
+        <th class="num">reqs</th>
+        <th class="num">tokens skipped</th>
+        <th class="num">$ saved</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderBanditRouter(s) {
+    const liveUsd = s.saved_by_bandit_usd || 0;
+    const liveReqs = s.reqs_bandit || 0;
+    const shadowDecisions = s.shadow_decisions || 0;
+    const shadowSaved = s.shadow_saved_usd || 0;
+    const shadowFull = s.shadow_cost_full_usd || 0;
+    const shadowPct = shadowFull > 0 ? ((shadowSaved / shadowFull) * 100).toFixed(0) : "0";
+    if (!liveReqs && !shadowDecisions) {
+      return '<p style="color:var(--muted);font-size:13px;">No bandit activity yet. Set TOKENQ_BANDIT_MODE=shadow or live to enable.</p>';
+    }
+    const liveCard = `<div class="card">
+        <div class="v">$${liveUsd.toFixed(4)}</div>
+        <div class="l">live · $ saved</div>
+        <div class="h">${fmt.format(liveReqs)} routed reqs</div>
+      </div>`;
+    const shadowCard = `<div class="card">
+        <div class="v">$${shadowSaved.toFixed(4)}</div>
+        <div class="l">shadow · projected $ saved</div>
+        <div class="h">${fmt.format(shadowDecisions)} decisions · ${shadowPct}% vs would-be cost</div>
+      </div>`;
+    return `<div class="stats" style="grid-template-columns:repeat(2,1fr);margin-bottom:8px;">${liveCard}${shadowCard}</div>
+      <p style="color:var(--muted);font-size:12px;margin-top:8px">
+        Live = realized savings on routed turns (price differential between original and routed tier).
+        Shadow = counterfactual: bandit picked an arm but never mutated the request.
+      </p>`;
+  }
+
+  function renderHealth(h) {
+    if (!h || h.requests === 0) {
+      return '<p style="color:var(--muted);font-size:13px;">No traffic yet — health grade pending.</p>';
+    }
+    const gradeColor = {
+      "A": "#34d399", "B": "#a3e635", "C": "#fbbf24",
+      "D": "#fb923c", "F": "#f87171", "—": "var(--muted)",
+    }[h.grade] || "var(--muted)";
+    const findings = (h.findings || []).map(f =>
+      `<li style="margin:4px 0;">${escapeHtml(f)}</li>`
+    ).join("") || '<li style="color:var(--muted);">No findings — looking good.</li>';
+    return `
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div style="font-size:64px;font-weight:600;line-height:1;color:${gradeColor};">
+          ${h.grade}
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;">
+          ${miniStat((h.upstream_cache_pct || 0).toFixed(0) + "%", "upstream cache")}
+          ${miniStat((h.savings_pct || 0).toFixed(1) + "%", "savings")}
+          ${miniStat((h.error_pct || 0).toFixed(1) + "%", "error rate")}
+          ${miniStat("$" + (h.saved_usd || 0).toFixed(2), "saved (window)")}
+        </div>
+      </div>
+      <ul style="margin-top:12px;padding-left:20px;font-size:13px;">${findings}</ul>
+    `;
+  }
+
+  function miniStat(v, l) {
+    return `<div><div style="font-size:18px;font-weight:600;">${v}</div>
+            <div style="font-size:11px;color:var(--muted);">${l}</div></div>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
+  function renderSessions(s) {
+    const top = s.top || [];
+    if (!top.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No sessions yet.</p>';
+    }
+    const summary = `
+      <div style="display:flex;gap:18px;margin-bottom:8px;flex-wrap:wrap;">
+        ${miniStat(fmt.format(s.session_count || 0), "sessions")}
+        ${miniStat("$" + (s.spent_usd || 0).toFixed(2), "spent")}
+        ${miniStat("$" + (s.avg_cost_per_session || 0).toFixed(4), "avg / session")}
+      </div>`;
+    const body = top.slice(0, 10).map(x => {
+      const dur = Math.max(0, (x.ended_at - x.started_at)) / 60;
+      return `
+        <tr>
+          <td><code style="font-size:11px;">${(x.session_id || "").slice(0, 8)}</code></td>
+          <td>${escapeHtml(x.project || "—")}</td>
+          <td class="num">${fmt.format(x.requests || 0)}</td>
+          <td class="num">${dur.toFixed(0)}m</td>
+          <td class="num">${fmt.format((x.input_tokens || 0) + (x.output_tokens || 0))}</td>
+          <td class="num">$${(x.spent_usd || 0).toFixed(4)}</td>
+        </tr>`;
+    }).join("");
+    return summary + `<table>
+      <thead><tr>
+        <th>session</th><th>project</th>
+        <th class="num">reqs</th><th class="num">duration</th>
+        <th class="num">tokens</th><th class="num">spent</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderByProject(rows) {
+    if (!rows.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No project data yet — Claude Code injects the working directory into the system prompt; non-Claude-Code clients show as (unknown).</p>';
+    }
+    const body = rows.map(x => `
+      <tr>
+        <td>${escapeHtml(x.project || "—")}</td>
+        <td class="num">${fmt.format(x.sessions || 0)}</td>
+        <td class="num">${fmt.format(x.requests || 0)}</td>
+        <td class="num">$${(x.spent_usd || 0).toFixed(4)}</td>
+        <td class="num">$${(x.avg_cost_per_session || 0).toFixed(4)}</td>
+      </tr>`).join("");
+    return `<table>
+      <thead><tr>
+        <th>project</th>
+        <th class="num">sessions</th>
+        <th class="num">reqs</th>
+        <th class="num">spent</th>
+        <th class="num">$/session</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderByTool(rows) {
+    if (!rows.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No tool_use traffic yet.</p>';
+    }
+    const totalCost = rows.reduce((s, r) => s + (r.spent_usd || 0), 0);
+    const body = rows.slice(0, 15).map(x => {
+      const share = totalCost > 0 ? (100 * (x.spent_usd || 0) / totalCost).toFixed(0) : 0;
+      return `
+        <tr>
+          <td>${escapeHtml(x.tool || "—")}</td>
+          <td class="num">${fmt.format(x.requests || 0)}</td>
+          <td class="num">${fmt.format(x.input_tokens || 0)}</td>
+          <td class="num">$${(x.spent_usd || 0).toFixed(4)}</td>
+          <td class="num">${share}%</td>
+        </tr>`;
+    }).join("");
+    return `<table>
+      <thead><tr>
+        <th>tool</th>
+        <th class="num">reqs</th>
+        <th class="num">input tok</th>
+        <th class="num">spent</th>
+        <th class="num">share</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  // Stable color map for the activity bar — same label always gets the
+  // same swatch so the bar is comparable across windows.
+  const ACTIVITY_COLORS = {
+    coding:        "#1f6feb",
+    debugging:     "#c62828",
+    feature_dev:   "#0a7d2c",
+    refactoring:   "#9333ea",
+    testing:       "#0891b2",
+    exploration:   "#64748b",
+    planning:      "#ca8a04",
+    delegation:    "#db2777",
+    git_ops:       "#ea580c",
+    build_deploy:  "#0d9488",
+    brainstorming: "#7c3aed",
+    conversation:  "#6b6b6b",
+    general:       "#94a3b8",
+    unclassified:  "#a1a1aa",
+  };
+
+  function renderByActivity(payload) {
+    // The endpoint shape changed: { rows, legacy: { count, spent_usd, first, last } }.
+    // Old shape was a bare array — keep both working for rolling-deploy safety.
+    const rows = Array.isArray(payload) ? payload : (payload.rows || []);
+    const legacy = Array.isArray(payload) ? null : payload.legacy;
+    const legacyNote = (legacy && legacy.count > 0) ? `
+      <p style="color:var(--muted);font-size:12px;margin:0 0 8px;">
+        ${fmt.format(legacy.count)} pre-classifier rows excluded
+        ($${(legacy.spent_usd || 0).toFixed(2)} spent,
+        ${escapeHtml(legacy.first || "")} → ${escapeHtml(legacy.last || "")}).
+        New traffic populates the table going forward.
+      </p>` : "";
+    if (!rows.length) {
+      return legacyNote + '<p style="color:var(--muted);font-size:13px;">No classified traffic yet — the activity classifier ships with the latest tokenq build, so historical rows are blank. Send a few requests through the proxy and they\'ll appear here.</p>';
+    }
+    const total = rows.reduce((s, r) => s + (r.spent_usd || 0), 0);
+    const segs = total > 0 ? rows.map(r => {
+      const pct = 100 * (r.spent_usd || 0) / total;
+      const color = ACTIVITY_COLORS[r.activity] || "#94a3b8";
+      const label = pct >= 6 ? r.activity.replace("_", " ") : "";
+      return `<div class="seg" style="width:${pct.toFixed(2)}%;background:${color};" title="${escapeHtml(r.activity)}: ${pct.toFixed(1)}%">${label}</div>`;
+    }).join("") : "";
+    const bar = segs ? `<div class="activity-bar">${segs}</div>` : "";
+    const body = rows.map(r => {
+      const color = ACTIVITY_COLORS[r.activity] || "#94a3b8";
+      const tokens = (r.input_tokens || 0) + (r.output_tokens || 0);
+      const oneShot = r.one_shot_pct == null ? "—"
+        : `${(r.one_shot_pct).toFixed(0)}%`;
+      const oneColor = r.one_shot_pct == null ? "var(--muted)"
+        : r.one_shot_pct >= 75 ? "var(--accent)"
+        : r.one_shot_pct >= 50 ? "var(--saved)" : "var(--err)";
+      return `
+        <tr>
+          <td><span style="display:inline-block;width:10px;height:10px;background:${color};border-radius:2px;margin-right:6px;vertical-align:-1px;"></span>${escapeHtml(r.activity.replace("_", " "))}</td>
+          <td class="num">${fmt.format(r.requests || 0)}</td>
+          <td class="num">${fmt.format(tokens)}</td>
+          <td class="num">$${(r.spent_usd || 0).toFixed(4)}</td>
+          <td class="num">${(r.cost_share_pct || 0).toFixed(1)}%</td>
+          <td class="num" style="color:${oneColor};">${oneShot}</td>
+        </tr>`;
+    }).join("");
+    return legacyNote + bar + `<table>
+      <thead><tr>
+        <th>activity</th>
+        <th class="num">reqs</th>
+        <th class="num">tokens</th>
+        <th class="num">spent</th>
+        <th class="num">share</th>
+        <th class="num">1-shot</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderByShellCommand(rows) {
+    if (!rows.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No shell commands yet.</p>';
+    }
+    const body = rows.slice(0, 20).map(x => `
+      <tr>
+        <td><code style="font-size:12px;">${escapeHtml(x.command || "—")}</code></td>
+        <td class="num">${fmt.format(x.calls || 0)}</td>
+        <td class="num">$${(x.spent_usd || 0).toFixed(4)}</td>
+      </tr>`).join("");
+    return `<table>
+      <thead><tr>
+        <th>command</th>
+        <th class="num">calls</th>
+        <th class="num">spent</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderByMcp(rows) {
+    if (!rows.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No MCP server traffic yet.</p>';
+    }
+    const body = rows.map(x => `
+      <tr>
+        <td>${escapeHtml(x.server || "—")}</td>
+        <td class="num">${fmt.format(x.calls || 0)}</td>
+        <td class="num">${fmt.format(x.input_tokens || 0)}</td>
+        <td class="num">$${(x.spent_usd || 0).toFixed(4)}</td>
+      </tr>`).join("");
+    return `<table>
+      <thead><tr>
+        <th>server</th>
+        <th class="num">calls</th>
+        <th class="num">input tok</th>
+        <th class="num">spent</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderOneshot(o) {
+    if (!o || (o.edit_turns || 0) === 0) {
+      return '<p style="color:var(--muted);font-size:13px;">No edit turns yet — one-shot rate compares same-file Edits across consecutive turns within a session.</p>';
+    }
+    const summary = `
+      <div style="display:flex;gap:18px;margin-bottom:8px;flex-wrap:wrap;">
+        ${miniStat((o.overall_one_shot_pct || 0).toFixed(0) + "%", "one-shot rate")}
+        ${miniStat(fmt.format(o.edit_turns || 0), "edit turns")}
+        ${miniStat(fmt.format(o.one_shot_turns || 0), "one-shot")}
+        ${miniStat(fmt.format(o.retry_turns || 0), "retries")}
+      </div>`;
+    const ps = o.per_session || [];
+    if (!ps.length) return summary;
+    const body = ps.map(s => {
+      const rateColor = s.one_shot_pct >= 75 ? "var(--accent)"
+                       : s.one_shot_pct >= 50 ? "var(--saved)" : "var(--err)";
+      return `
+        <tr>
+          <td><code style="font-size:11px;">${(s.session_id || "").slice(0, 8)}</code></td>
+          <td>${escapeHtml(s.project || "—")}</td>
+          <td class="num">${fmt.format(s.edit_turns || 0)}</td>
+          <td class="num">${fmt.format(s.one_shot || 0)}</td>
+          <td class="num">${fmt.format(s.retries || 0)}</td>
+          <td class="num" style="color:${rateColor};font-weight:600;">${(s.one_shot_pct || 0).toFixed(0)}%</td>
+        </tr>`;
+    }).join("");
+    return summary + `<table>
+      <thead><tr>
+        <th>session</th>
+        <th>project</th>
+        <th class="num">edits</th>
+        <th class="num">one-shot</th>
+        <th class="num">retries</th>
+        <th class="num">rate</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderByModel(rows) {
+    if (!rows.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No traffic yet.</p>';
+    }
+    const body = rows.map(x => {
+      const tokens = (x.input_tokens || 0) + (x.output_tokens || 0);
+      const name = (x.model || "—").replace("claude-", "");
+      return `
+        <tr>
+          <td>${name}</td>
+          <td class="num">${fmt.format(x.requests || 0)}</td>
+          <td class="num">${fmt.format(tokens)}</td>
+          <td class="num">$${(x.spent_usd || 0).toFixed(4)}</td>
+        </tr>`;
+    }).join("");
+    return `<table>
+      <thead><tr>
+        <th>model</th>
+        <th class="num">reqs</th>
+        <th class="num">tokens</th>
+        <th class="num">spent</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderExpensive(rows) {
+    if (!rows.length) {
+      return '<p style="color:var(--muted);font-size:13px;">No billable requests yet.</p>';
+    }
+    const body = rows.map(x => `
+      <tr>
+        <td>${new Date(x.ts * 1000).toLocaleTimeString()}</td>
+        <td>${(x.model || "—").replace("claude-", "")}</td>
+        <td class="num">${fmt.format(x.input_tokens || 0)}</td>
+        <td class="num">${fmt.format(x.output_tokens || 0)}</td>
+        <td class="num">${x.latency_ms || 0}ms</td>
+        <td class="num">$${(x.estimated_cost_usd || 0).toFixed(4)}</td>
+        <td>${x.stream ? '<span class="badge">stream</span>' : ""}</td>
+      </tr>`).join("");
+    return `<table>
+      <thead><tr>
+        <th>time</th><th>model</th>
+        <th class="num">in</th><th class="num">out</th>
+        <th class="num">latency</th><th class="num">cost</th>
+        <th>flags</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderCompactions(stats, rows) {
+    const count = stats.compaction_events || 0;
+    const dropped = stats.compaction_dropped_tokens || 0;
+    const perTurn = stats.compaction_saved_per_turn || 0;
+
+    if (!count) {
+      return '<p style="color:var(--muted);font-size:13px;">'
+        + 'No transcript compactions yet — fires once your session crosses '
+        + '~150k tokens of history.'
+        + '</p>';
+    }
+
+    const summary = `
+      <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;">
+        <div class="card"><div class="v">${fmt.format(count)}</div><div class="l">rollovers</div></div>
+        <div class="card"><div class="v">${fmt.format(dropped)}</div><div class="l">prefix tokens stripped</div></div>
+        <div class="card"><div class="v">${fmt.format(perTurn)}</div><div class="l">recurring per-turn savings</div></div>
+      </div>`;
+
+    const body = rows.map(x => `
+      <tr>
+        <td>${new Date(x.ts * 1000).toLocaleString()}</td>
+        <td>${(x.model || "—").replace("claude-", "")}</td>
+        <td class="num">${fmt.format(x.dropped_messages || 0)}</td>
+        <td class="num">${fmt.format(x.dropped_tokens || 0)}</td>
+        <td class="num">${fmt.format(x.summary_tokens || 0)}</td>
+        <td class="num">${fmt.format(x.saved_per_turn || 0)}</td>
+      </tr>`).join("");
+
+    return summary + `<table>
+      <thead><tr>
+        <th>time</th><th>model</th>
+        <th class="num">msgs dropped</th>
+        <th class="num">prefix tokens dropped</th>
+        <th class="num">summary tokens</th>
+        <th class="num">saved/turn</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function renderSkillCompressions(stats, rows) {
+    const count = stats.skill_compressions || 0;
+    const saved = stats.skill_compress_saved_tokens || 0;
+    const before = stats.skill_compress_before_tokens || 0;
+    const pct = before > 0 ? ((saved / before) * 100).toFixed(1) : "0.0";
+
+    if (!count) {
+      return '<p style="color:var(--muted);font-size:13px;">'
+        + 'No SKILL.md rewrites yet — run <code>tokenq compress-skill PATH</code> to track one.'
+        + '</p>';
+    }
+
+    const summary = `
+      <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px;">
+        <div class="card"><div class="v">${fmt.format(count)}</div><div class="l">files rewritten</div></div>
+        <div class="card"><div class="v">${fmt.format(saved)}</div><div class="l">tokens saved</div></div>
+        <div class="card"><div class="v">${pct}%</div><div class="l">avg reduction</div></div>
+      </div>`;
+
+    const body = rows.map(x => {
+      const fileShort = (x.path || "").split("/").slice(-2).join("/");
+      const rowPct = x.before_tokens > 0
+        ? ((x.saved_tokens / x.before_tokens) * 100).toFixed(0)
+        : "0";
+      return `
+        <tr>
+          <td>${new Date(x.ts * 1000).toLocaleString()}</td>
+          <td><code>${fileShort}</code></td>
+          <td>${(x.model || "—").replace("claude-", "")}</td>
+          <td class="num">${fmt.format(x.before_tokens || 0)}</td>
+          <td class="num">${fmt.format(x.after_tokens || 0)}</td>
+          <td class="num">${fmt.format(x.saved_tokens || 0)} <span style="color:var(--muted)">(${rowPct}%)</span></td>
+        </tr>`;
+    }).join("");
+
+    return summary + `<table>
+      <thead><tr>
+        <th>time</th><th>file</th><th>model</th>
+        <th class="num">before</th><th class="num">after</th><th class="num">saved</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+  }
+
+  function fmtShort(v) {
+    if (v >= 1e9) return (v / 1e9).toFixed(v >= 1e10 ? 0 : 1) + "B";
+    if (v >= 1e6) return (v / 1e6).toFixed(v >= 1e7 ? 0 : 1) + "M";
+    if (v >= 1e3) return (v / 1e3).toFixed(v >= 1e4 ? 0 : 1) + "k";
+    return Math.round(v).toString();
+  }
+
+  function niceCeil(v) {
+    if (v <= 0) return 1;
+    const exp = Math.floor(Math.log10(v));
+    const base = Math.pow(10, exp);
+    const m = v / base;
+    let nice;
+    if (m <= 1) nice = 1;
+    else if (m <= 2) nice = 2;
+    else if (m <= 5) nice = 5;
+    else nice = 10;
+    return nice * base;
+  }
+
+  function renderTokensChart(rows) {
+    const el = document.getElementById("tokens-chart");
+    const fromEl = document.getElementById("tokens-chart-from");
+    const toEl = document.getElementById("tokens-chart-to");
+    const tooltip = document.getElementById("tokens-tooltip");
+    if (!rows.length) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0;">No data yet.</p>';
+      fromEl.textContent = toEl.textContent = "—";
+      tooltip.style.display = "none";
+      return;
+    }
+    // Plot whatever buckets the API returned. The backend aligns and filters
+    // to the active window, so we just need to render them in order.
+    const sorted = rows.slice().sort((a, b) => a.bucket - b.bucket);
+    const buckets = sorted.map(r => ({
+      bucket: r.bucket,
+      tokens: r.tokens || 0,
+      saved_tokens: r.saved_tokens || 0,
+    }));
+    if (buckets.length < 2) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0;">Not enough data points yet.</p>';
+      fromEl.textContent = toEl.textContent = "—";
+      tooltip.style.display = "none";
+      return;
+    }
+
+    const W = 720, H = 220;
+    const padL = 56, padR = 14, padT = 12, padB = 28;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+
+    let totalSent = 0, totalSkipped = 0;
+    buckets.forEach(b => { totalSent += b.tokens; totalSkipped += b.saved_tokens; });
+
+    const rawMax = Math.max(1, ...buckets.map(b => Math.max(b.tokens, b.saved_tokens)));
+    const maxV = niceCeil(rawMax);
+    const xAt = i => padL + (i / (buckets.length - 1)) * chartW;
+    const yAt = v => padT + chartH - (v / maxV) * chartH;
+    buckets.forEach((b, i) => { b.x = xAt(i); });
+
+    const yTicks = 4;
+    let yLabels = "", gridLines = "";
+    for (let k = 0; k <= yTicks; k++) {
+      const v = (maxV * k) / yTicks;
+      const y = yAt(v);
+      gridLines += `<line x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+      yLabels += `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="10" fill="var(--muted)">${fmtShort(v)}</text>`;
+    }
+
+    const tickCount = Math.min(7, buckets.length);
+    const xTickIdxs = [...new Set(
+      Array.from({length: tickCount}, (_, k) =>
+        Math.round((k * (buckets.length - 1)) / Math.max(1, tickCount - 1))
+      )
+    )];
+    let xLabels = "";
+    xTickIdxs.forEach(i => {
+      const x = xAt(i);
+      const t = new Date(buckets[i].bucket * 1000);
+      const lbl = t.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+      xLabels += `<text x="${x}" y="${H - 10}" text-anchor="middle" font-size="10" fill="var(--muted)">${lbl}</text>`;
+    });
+
+    const sentPts = buckets.map((b, i) => `${xAt(i)},${yAt(b.tokens)}`).join(" ");
+    const skippedPts = buckets.map((b, i) => `${xAt(i)},${yAt(b.saved_tokens)}`).join(" ");
+
+    let circles = "";
+    buckets.forEach((b, i) => {
+      circles += `<circle cx="${xAt(i)}" cy="${yAt(b.tokens)}" r="2.5" fill="var(--accent)"/>`;
+      circles += `<circle cx="${xAt(i)}" cy="${yAt(b.saved_tokens)}" r="2.5" fill="var(--saved)"/>`;
+    });
+
+    let hoverRects = "";
+    for (let i = 0; i < buckets.length; i++) {
+      const x1 = i === 0 ? padL : (xAt(i - 1) + xAt(i)) / 2;
+      const x2 = i === buckets.length - 1 ? (W - padR) : (xAt(i) + xAt(i + 1)) / 2;
+      hoverRects += `<rect class="hover-zone" data-i="${i}" x="${x1}" y="${padT}" width="${x2 - x1}" height="${chartH}" fill="transparent"/>`;
+    }
+
+    el.innerHTML = `
+      <svg id="tokens-svg" viewBox="0 0 ${W} ${H}">
+        ${gridLines}
+        ${yLabels}
+        ${xLabels}
+        <line id="tokens-cursor" x1="0" x2="0" y1="${padT}" y2="${padT + chartH}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>
+        <polyline points="${sentPts}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <polyline points="${skippedPts}" fill="none" stroke="var(--saved)" stroke-width="2"/>
+        ${circles}
+        <circle id="tokens-hi-sent" r="4" fill="var(--accent)" stroke="var(--card)" stroke-width="1.5" style="display:none"/>
+        <circle id="tokens-hi-skipped" r="4" fill="var(--saved)" stroke="var(--card)" stroke-width="1.5" style="display:none"/>
+        ${hoverRects}
+      </svg>
+    `;
+
+    fromEl.textContent = `${fmt.format(totalSent)} sent · ${fmt.format(totalSkipped)} skipped`;
+    toEl.textContent = `peak ${fmtShort(maxV)} / h`;
+
+    const svg = document.getElementById("tokens-svg");
+    const cursor = document.getElementById("tokens-cursor");
+    const hiSent = document.getElementById("tokens-hi-sent");
+    const hiSkipped = document.getElementById("tokens-hi-skipped");
+    const host = svg.parentElement;
+
+    svg.addEventListener("mousemove", (e) => {
+      const t = e.target;
+      if (!t || !t.classList || !t.classList.contains("hover-zone")) return;
+      const idx = Number(t.getAttribute("data-i"));
+      const b = buckets[idx];
+      if (!b) return;
+      const dt = new Date(b.bucket * 1000);
+      const tsLbl = dt.toLocaleString([], {month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit"});
+      tooltip.innerHTML =
+        `<div class="ts">${tsLbl}</div>` +
+        `<div class="row"><span class="lbl"><span class="sw" style="background:var(--accent)"></span>sent</span><span>${fmt.format(b.tokens)}</span></div>` +
+        `<div class="row"><span class="lbl"><span class="sw" style="background:var(--saved)"></span>skipped</span><span>${fmt.format(b.saved_tokens)}</span></div>`;
+
+      const hostRect = host.getBoundingClientRect();
+      const tipW = 170;
+      let tx = e.clientX - hostRect.left + 14;
+      let ty = e.clientY - hostRect.top + 14;
+      if (tx + tipW > hostRect.width) tx = e.clientX - hostRect.left - tipW - 8;
+      tooltip.style.left = Math.max(0, tx) + "px";
+      tooltip.style.top = Math.max(0, ty) + "px";
+      tooltip.style.display = "block";
+
+      cursor.setAttribute("x1", b.x);
+      cursor.setAttribute("x2", b.x);
+      cursor.style.display = "block";
+      hiSent.setAttribute("cx", b.x);
+      hiSent.setAttribute("cy", yAt(b.tokens));
+      hiSent.style.display = "block";
+      hiSkipped.setAttribute("cx", b.x);
+      hiSkipped.setAttribute("cy", yAt(b.saved_tokens));
+      hiSkipped.style.display = "block";
+    });
+
+    svg.addEventListener("mouseleave", () => {
+      tooltip.style.display = "none";
+      cursor.style.display = "none";
+      hiSent.style.display = "none";
+      hiSkipped.style.display = "none";
+    });
+  }
+
+  function renderChart(rows) {
+    const el = document.getElementById("chart");
+    const fromEl = document.getElementById("chart-from");
+    const toEl = document.getElementById("chart-to");
+    if (!rows.length) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0;">No data yet.</p>';
+      fromEl.textContent = toEl.textContent = "—";
+      return;
+    }
+    // Use whatever buckets the API returned (size adapts to the window).
+    const buckets = rows.slice()
+      .sort((a, b) => a.bucket - b.bucket)
+      .map(r => ({ bucket: r.bucket, spent_usd: r.spent_usd || 0 }));
+    if (!buckets.length) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0;">No data yet.</p>';
+      fromEl.textContent = toEl.textContent = "—";
+      return;
+    }
+    const W = 600, H = 80, pad = 4;
+    const maxV = Math.max(0.0001, ...buckets.map(b => b.spent_usd));
+    const barW = (W - pad * 2) / buckets.length;
+    const bars = buckets.map((b, i) => {
+      const h = (b.spent_usd / maxV) * (H - pad * 2);
+      const x = pad + i * barW;
+      const y = H - pad - h;
+      const fill = b.spent_usd > 0 ? "var(--accent)" : "var(--border)";
+      const tip = `${new Date(b.bucket * 1000).toLocaleTimeString([], {hour:'2-digit'})} · $${b.spent_usd.toFixed(4)}`;
+      return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${(barW - 1).toFixed(2)}" height="${Math.max(1, h).toFixed(2)}" fill="${fill}"><title>${tip}</title></rect>`;
+    }).join("");
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${bars}</svg>`;
+    fromEl.textContent = new Date(buckets[0].bucket * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    toEl.textContent = `max $${maxV.toFixed(4)}/bucket`;
+  }
+
+  // ---------- Audit report ----------
+  function readCustomRange() {
+    const f = document.getElementById("rep-from").value;
+    const t = document.getElementById("rep-to").value;
+    if (f && t) {
+      const fs = Math.floor(new Date(f).getTime() / 1000);
+      const ts = Math.floor(new Date(t).getTime() / 1000);
+      if (Number.isFinite(fs) && Number.isFinite(ts) && ts > fs) {
+        return [fs, ts];
+      }
+    }
+    return null;
+  }
+
+  function showReportError(msg) {
+    const el = document.getElementById("rep-err");
+    if (!msg) { el.style.display = "none"; el.textContent = ""; return; }
+    el.style.display = "block";
+    el.textContent = msg;
+  }
+
+  function renderReportPreview(payload) {
+    const c = payload.comparison || {};
+    const t = payload.totals || {};
+    const w = payload.window || {};
+    const fmtUsd = v => "$" + (v || 0).toFixed(2);
+    const span = w.span_seconds || 0;
+    const spanText = span >= 86400
+      ? `${(span / 86400).toFixed(1)}d`
+      : span >= 3600 ? `${(span / 3600).toFixed(1)}h` : `${Math.round(span / 60)}m`;
+    const html = `
+      <div style="color:var(--muted);font-size:11px;margin-bottom:8px">
+        window: ${new Date(w.from * 1000).toLocaleString()} → ${new Date(w.to * 1000).toLocaleString()} · span ${spanText}
+      </div>
+      <div class="pair">
+        <div class="card"><div class="v">${fmtUsd(c.without_tokenq_usd)}</div><div class="l">without tokenq</div></div>
+        <div class="card"><div class="v">${fmtUsd(c.with_tokenq_usd)}</div><div class="l">with tokenq</div></div>
+        <div class="card"><div class="v">${fmtUsd(c.saved_usd)}</div><div class="l">saved</div></div>
+        <div class="card"><div class="v">${(c.saved_pct || 0).toFixed(1)}%</div><div class="l">savings rate</div></div>
+      </div>
+      <div style="margin-top:10px;color:var(--muted);font-size:12px">
+        ${fmt.format(t.requests || 0)} requests ·
+        ${fmt.format((t.input_tokens || 0) + (t.output_tokens || 0))} tokens ·
+        ${fmt.format(t.saved_tokens || 0)} saved tokens ·
+        ${Math.round(t.avg_latency_ms || 0)}ms avg latency
+      </div>`;
+    const el = document.getElementById("rep-preview");
+    el.innerHTML = html;
+    el.style.display = "block";
+  }
+
+  function applyCustomFromInputs() {
+    const custom = readCustomRange();
+    if (!custom) return false;
+    globalWindow.from = custom[0];
+    globalWindow.to = custom[1];
+    globalWindow.preset = null;
+    setActivePreset(null);
+    applyWindowLabels();
+    return true;
+  }
+
+  async function fetchReportPreview() {
+    try {
+      const r = await fetch("/api/report?" + windowParams().toString());
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        showReportError(body.error || `report failed (${r.status})`);
+        return;
+      }
+      renderReportPreview(await r.json());
+    } catch (e) {
+      showReportError(String(e));
+    }
+  }
+
+  function generateReport() {
+    showReportError("");
+    applyCustomFromInputs();
+    refresh();
+    fetchReportPreview();
+  }
+
+  function downloadReportPdf() {
+    showReportError("");
+    applyCustomFromInputs();
+    window.open("/api/report.pdf?" + windowParams().toString(), "_blank");
+  }
+
+  document.querySelectorAll("#report-panel .preset").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.preset;
+      if (!PRESET_LABELS[name]) return;
+      globalWindow.preset = name;
+      globalWindow.from = globalWindow.to = null;
+      document.getElementById("rep-from").value = "";
+      document.getElementById("rep-to").value = "";
+      setActivePreset(name);
+      applyWindowLabels();
+      refresh();
+      fetchReportPreview();
+    });
+  });
+  document.getElementById("rep-generate").addEventListener("click", generateReport);
+  document.getElementById("rep-pdf").addEventListener("click", downloadReportPdf);
+
+  setActivePreset(globalWindow.preset);
+  applyWindowLabels();
+
+  // ─────────── Tab switching ───────────
+  // Persist the active tab in localStorage so refresh keeps the user where
+  // they were. Falls back to ?tab=foo if a URL param is present (link sharing).
+  const TAB_STORAGE_KEY = "tokenq.activeTab";
+  function activateTab(name) {
+    const valid = ["overview", "spend", "activity", "pipeline"];
+    const tab = valid.includes(name) ? name : "overview";
+    document.querySelectorAll(".tab").forEach(b => {
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+    document.querySelectorAll(".tab-panel").forEach(p => {
+      p.classList.toggle("active", p.id === "tab-" + tab);
+    });
+    try { localStorage.setItem(TAB_STORAGE_KEY, tab); } catch {}
+  }
+  document.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => activateTab(btn.dataset.tab));
+  });
+  const urlTab = new URLSearchParams(location.search).get("tab");
+  let storedTab = null;
+  try { storedTab = localStorage.getItem(TAB_STORAGE_KEY); } catch {}
+  activateTab(urlTab || storedTab || "overview");
+
+  refresh();
+  setInterval(refresh, 2000);
+</script>
+</body>
+</html>
