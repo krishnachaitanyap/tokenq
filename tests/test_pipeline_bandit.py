@@ -575,7 +575,6 @@ async def test_arm_state_backward_compat_treats_old_n_as_live_n(tmp_home):
 
 async def test_auto_graduate_from_shadow_after_enough_evidence(tmp_home):
     """A shadow-rewarded arm with high success + meaningful cost win graduates."""
-    from tokenq.pipeline import PipelineRequest
     from tokenq.pipeline.bandit import (
         MODE_SHADOW,
         BanditRouter,

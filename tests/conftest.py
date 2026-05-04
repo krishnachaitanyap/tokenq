@@ -5,8 +5,6 @@ Each test gets a fresh DB in a tempdir. We do this by overriding TOKENQ_HOME
 """
 from __future__ import annotations
 
-import importlib
-import os
 import sys
 from pathlib import Path
 

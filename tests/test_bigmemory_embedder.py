@@ -175,7 +175,8 @@ async def test_backfill_fills_pre_embedding_rows(tmp_home):
     assert pre["embedded_items"] == 0
 
     # Phase 2 — turn embeddings on, drop module cache, run backfill.
-    import os, sys
+    import os
+    import sys
     os.environ["TOKENQ_EMBED_ENABLED"] = "1"
     for name in list(sys.modules):
         if name == "tokenq" or name.startswith("tokenq."):

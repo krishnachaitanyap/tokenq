@@ -15,7 +15,6 @@ from __future__ import annotations
 import multiprocessing as mp
 import os
 import sqlite3
-import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -96,7 +95,7 @@ def start(
         if mcp_on:
             typer.echo(f"  MCP        http://{host}:{mcp_port}/mcp")
         typer.echo(f"  logs       {DAEMON_LOG_PATH}  (`tokenq logs -f` to tail)")
-        typer.echo(f"  stop with  `tokenq stop`")
+        typer.echo("  stop with  `tokenq stop`")
         typer.echo("")
         return
 
