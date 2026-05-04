@@ -797,3 +797,195 @@ sequenceDiagram
 pipeline + upstream + after-hook write time. The dashboard's "avg latency" is
 `AVG(latency_ms)` over the window — useful for spotting regressions but not
 broken down per stage. Per-stage timing isn't currently tracked.
+
+---
+
+## 14. Multi-turn conversations: how history accumulates
+
+### 14.1 The premise
+
+The Claude API is **stateless**. There is no server-side conversation; every
+turn the client re-sends the **entire history** in the `messages` array.
+
+```
+turn 1: [u₁]
+turn 2: [u₁, a₁, u₂]
+turn 3: [u₁, a₁, u₂, a₂, u₃]
+turn 4: [u₁, a₁, u₂, a₂, u₃, a₃, u₄]   ← grows linearly per turn
+…
+turn N: [u₁, a₁, …, u_{N-1}, a_{N-1}, u_N]
+```
+
+For an agentic client (Claude Code), each `aᵢ` may include `tool_use` blocks
+and each `uᵢ₊₁` may include matching `tool_result` blocks. Tool results are
+the dominant byte source — a single file read can be 50KB, and that 50KB is
+re-sent on every subsequent turn until the conversation ends.
+
+### 14.2 What Anthropic's prompt cache does
+
+Anthropic charges 3 different rates for the input prefix:
+
+| Tier            | Rate (vs base input) | When it applies                                   |
+|-----------------|----------------------|---------------------------------------------------|
+| base input      | 1.0×                 | Bytes the upstream has never seen                 |
+| cache_creation  | 1.25×                | First time a cacheable prefix is sent             |
+| cache_read      | **0.10×**            | Re-hits of a byte-identical, recently-seen prefix |
+
+A long agentic session naturally re-sends a giant identical prefix every
+turn. If the client marks cache breakpoints right and **nothing on the path
+mutates the prefix bytes**, every turn after the first reads at 0.10× — a
+~10× discount on the input cost.
+
+This is the lever everything in tokenq is built around. Most of the
+"savings" you see on the dashboard are actually *preserved cache hits*, not
+new bytes that never went out.
+
+### 14.3 The cache-stability invariant
+
+Every stage is classified by what it does to the byte stream across turns:
+
+| Stage                | Effect across turns                                                                                  |
+|----------------------|------------------------------------------------------------------------------------------------------|
+| BanditRouter         | May change `model` once per (bucket) and stay sticky thereafter. Cache key includes model, so a route change is one cache rebuild then steady. |
+| OutputController     | Caps `max_tokens`; appends a **byte-stable, idempotent** terseness suffix to system. Re-running on the same conversation produces identical bytes. |
+| TranscriptCompactor  | Replaces the oldest N messages with a deterministic `[tokenq compacted N earlier messages …]` marker, **snapped to a chunk boundary** so the prefix stays identical for many turns within the chunk. |
+| SkillLoader          | ⚠ Re-scores against the **latest** user message every turn. The kept top-K can change → system bytes change → cache invalidates. Use only when the trim ratio is large enough to outweigh the cache-rebuild cost. |
+| BigMemoryInjectStage | Caches one snapshot per `session_hash = sha256(system, first_user_msg)` and reuses it byte-for-byte across turns. Refreshed every N turns or M seconds. |
+| ExactMatchCache      | Read-only on the prefix; doesn't mutate body.                                                        |
+| ToolResultDedup      | Mutates **all** tool_results every turn — but mutation is a function of `(content_hash, position)`, deterministic. The prefix bytes stabilize after the first turn that introduced each duplicate. |
+| ToolOutputCompressor | Same: mutates **every** tool_result every turn so the bytes are byte-stable, even though only the last-message savings are *credited* this turn. |
+| BigMemoryStage       | Capture-only — never mutates the body.                                                               |
+
+**Rule:** anything that breaks byte-stability of the prefix has to save more
+tokens than the cache-rebuild costs (roughly: `saved_tokens > 1.15 *
+prefix_tokens`, since a rebuild costs `1.25× - 0.10× = 1.15×` of the prefix
+in counterfactual savings forfeited). That's why dedup/compress mutate every
+turn (otherwise turn-1's compressed bytes wouldn't match turn-2's
+recomputed compression on the same content) and why the bigmemory inject
+stage uses session-snapshot reuse instead of fresh per-turn ranking.
+
+### 14.4 What runs on every turn vs once-per-rollover
+
+```mermaid
+flowchart TD
+    A[turn arrives] --> B[every-turn stages]
+    B --> B1[BanditRouter samples θ]
+    B --> B2[OutputController classifies + caps]
+    B --> B3[Compactor checks threshold + advances cut if rollover]
+    B --> B4[SkillLoader re-scores]
+    B --> B5[Inject reuses snapshot]
+    B --> B6[Cache lookup]
+    B --> B7[Dedup walks all tool_results]
+    B --> B8[Compress walks all tool_results]
+    B --> B9[BigMemory captures new tool_results]
+    B --> C[upstream call]
+    C --> D[once-per-rollover work]
+    D --> D1[Compactor logs compaction_event<br/>only when cache_read==0]
+    D --> D2[Bandit logs shadow OR updates Beta]
+    D --> D3[Cache writes row<br/>if deterministic + tool-free]
+    D --> E[INSERT requests row]
+```
+
+### 14.5 Compaction in action — turn-by-turn timeline
+
+Suppose a session has these per-turn billed-prefix sizes (system + tools +
+messages, in tokens) and cache states:
+
+| Turn | Prefix tokens | What happens                                                                                       | Anthropic charges                |
+|------|---------------|---------------------------------------------------------------------------------------------------|----------------------------------|
+| 1    | 30,000        | First turn. Compactor: `30k < 80k threshold`, no-op. Cache miss.                                  | 30k @ 1.25× (cache_creation)     |
+| 2    | 32,000        | Same prefix + 2k new bytes. Cache hit on 30k of the 32k.                                          | 30k @ 0.10× + 2k @ 1.25×         |
+| …    | …             | …                                                                                                  |                                   |
+| 12   | 79,000        | Just under threshold. Cache hit on 77k.                                                            | 77k @ 0.10× + 2k @ 1.25×         |
+| 13   | **82,000**    | **Crosses 80k threshold.** Compactor walks back from end accumulating tokens until it has 20k of "recent." Suppose that puts the cut at message index 26 → snapped down to 20 (chunk boundary) → advanced past one orphan tool_result → cut=21. Drops 21 messages = ~58k tokens. New summary marker = ~30 tokens. New prefix = ~24k tokens. **`cache_read_input_tokens == 0`** → log compaction_event with `saved_per_turn = 58000 - 30 ≈ 57,970`. | 24k @ 1.25× (full rebuild)       |
+| 14   | 26,000        | Same compacted prefix + 2k new. **cache_read > 0** → no event logged this turn (already credited). | 24k @ 0.10× + 2k @ 1.25×         |
+| 15   | 28,000        | Same. cache_read > 0.                                                                              | 24k @ 0.10× + 2k @ 1.25×         |
+
+**Per-turn savings vs counterfactual** (no compaction would have been
+~80k+ at 0.10× every turn): from turn 14 onward, every turn pays
+`24k × 0.10× + 2k × 1.25×` ≈ 4.9k effective input units instead of
+`82k × 0.10×` = 8.2k. That's ~3.3k tokens saved per turn × 50 more turns
+before the next rollover = ~165k tokens saved over the chunk window, for a
+one-time rebuild cost of `24k × 1.15× = 27.6k` extra paid on turn 13.
+Net win once `turns_to_next_rollover ≥ 9`.
+
+**This is why `compaction_events.saved_per_turn` is a recurring number, not
+a one-shot.** The dashboard sums `saved_per_turn` across rollover events in
+the window — each row represents the savings on every cache-hit turn that
+follows it until the next rollover.
+
+### 14.6 What "saved tokens" counts on each turn
+
+The accounting rule across turns is subtle:
+
+| Stage                | Counting rule                                                                                                                                                         |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ExactMatchCache      | On hit, credits **input_tokens + output_tokens** of the *cached* response. Per-turn: at most one credit, since the upstream call was skipped.                          |
+| ToolResultDedup      | Credits **every duplicate found this request**, but earlier-turn duplicates were already small (stubbed on a previous turn) so re-stubbing is a noop. New savings ≈ duplicates introduced this turn. |
+| ToolOutputCompressor | Mutates every tool_result every turn for byte stability, but **only credits savings from tool_results in the *last* message**. Earlier-turn tool_results were credited on the turn they were new and are now read from upstream cache. |
+| SkillLoader          | Credits the diff `len(text) - len(rebuilt_text)` every turn. If the kept top-K changes turn-to-turn, the diff oscillates — **but the savings are real every turn** because the model still saw fewer skills. |
+| BanditRouter         | Live mode: credits `cost_at_original - cost_at_routed` per request the routed arm differed.                                                                            |
+| TranscriptCompactor  | Credits `dropped - summary` *once per rollover event*. The dashboard amortizes this across the cache-hit turns that follow.                                            |
+| BigMemoryStage       | Doesn't credit tokens — capture only.                                                                                                                                  |
+
+The `requests.saved_tokens` column is the union of `saved_by_cache +
+saved_by_dedup + saved_by_compress + saved_by_skills` for that *single
+request*. Compaction savings are NOT in that column — they live in
+`compaction_events` and are added to the bottom-line "saved $" via a
+separate `_saved_usd_for_row`-equivalent calculation in the report
+collector.
+
+### 14.7 Where session identity comes from
+
+Several features key on a session ID even though the API itself doesn't
+have one:
+
+| Feature                          | Definition                                                                                  |
+|----------------------------------|---------------------------------------------------------------------------------------------|
+| BigMemoryInjectStage snapshot    | `session_hash = sha256(system + first_user_msg)`                                            |
+| Dashboard `session_id`           | Set client-side via the `x-tokenq-session` request header (or computed by the proxy)        |
+| Bandit context bucket            | NOT session-scoped — `(size band, has_tools, has_system, has_imgs, temp_zero)`              |
+| Cache key                        | Hash of (model, messages, system, max_tokens, temperature, top_p, top_k, stop_sequences, stream) — implicitly session-scoped because `messages` is the entire history |
+
+So two requests in the same session that differ only by the latest user
+message will share `session_hash` (bigmemory) but have different cache keys
+(ExactMatchCache).
+
+### 14.8 The two cache layers
+
+There are two caches, and people confuse them:
+
+```mermaid
+flowchart LR
+    C[client] --> P[tokenq proxy]
+    P -- key=hash body --> L[(local SQLite cache)]
+    L -- hit --> P
+    P --> U[Anthropic upstream]
+    U -- prompt cache,<br/>byte-keyed prefix --> U
+```
+
+| Property                  | Local cache (`ExactMatchCache`)                | Upstream prompt cache (Anthropic)              |
+|---------------------------|-----------------------------------------------|------------------------------------------------|
+| Where it lives            | tokenq SQLite on the user's machine            | Anthropic's infrastructure                     |
+| Key                       | Hash of full canonical body                    | Byte-identical prefix up to a cache breakpoint |
+| What it skips             | The entire upstream call                       | Re-billing the prefix at base input rate        |
+| How much it saves         | 100% of input + output cost (call never happens) | 90% of prefix input cost (0.10× vs 1.0×)      |
+| Multi-turn hit rate       | Low — keyed on full history, so usually only useful for re-runs | High — designed for exactly this   |
+| Visible on dashboard      | `saved_by_cache`, `cached_locally=1`           | `cache_read_tokens` column                     |
+
+Most multi-turn savings flow through the **upstream** cache, which tokenq
+doesn't operate but actively protects through every stage's byte-stability
+discipline. Local cache hits are a smaller, opportunistic win — typically
+on retries, replays, or test reruns.
+
+### 14.9 Failure modes you'd see in the dashboard
+
+What it looks like when multi-turn behavior breaks:
+
+| Symptom                                                                                  | Likely cause                                                                                                  |
+|-----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `cache_read_tokens` is near zero on a long session                                       | Some prefix-mutating stage is running with a non-deterministic transform — check SkillLoader if enabled, or a client mutating system between turns. |
+| `compaction_events` grows quickly (>1 per ~20 turns)                                     | Cut isn't sticking on a chunk boundary — likely `chunk_messages` is too small for the message count in this transcript. Compactor auto-shrinks `effective_chunk` to `max(1, cut//2)` to handle this; if it's still rolling fast, the threshold is set too low. |
+| API 400s with `unexpected tool_use_id found in tool_result blocks`                       | Pre-fix-§4.1 bug where the cut orphaned a tool_result. Should not happen on current `main`.                  |
+| `saved_by_compress` is large but `cache_read_tokens` is also low                         | Compress is mutating bytes per turn somehow — probably the per-turn output of `_compress_text` isn't fully deterministic on identical input. Inspect a captured request body diff across turns. |
+| `saved_usd` flat despite high `saved_tokens`                                             | Tokens are being saved by stages that only trim *input* (dedup/compress/skills), but counted alongside cache hits in `saved_tokens`. Output savings only flow when `cached_locally=1`. The split is in `_saved_usd_for_row`. |
