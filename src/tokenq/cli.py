@@ -143,6 +143,36 @@ def start(
 
 
 @app.command()
+def serve(
+    host: Annotated[str, typer.Option(help="Bind address.")] = PROXY_HOST,
+    port: Annotated[int, typer.Option(help="Proxy port.")] = PROXY_PORT,
+    dashboard_port: Annotated[int, typer.Option(help="Dashboard port.")] = DASHBOARD_PORT,
+    mcp_port: Annotated[int, typer.Option(help="bigmemory MCP port.")] = MCP_PORT,
+    no_mcp: Annotated[bool, typer.Option("--no-mcp", help="Skip the bigmemory MCP server.")] = False,
+    log_level: Annotated[str, typer.Option(help="info|warning|debug")] = LOG_LEVEL,
+) -> None:
+    """Run proxy + dashboard + MCP in a SINGLE process (no subprocess spawn).
+
+    Use this on locked-down environments (corporate Windows AppLocker,
+    container images, restricted CI) where multiprocessing.spawn is
+    blocked. Equivalent to running three `python -m uvicorn …` commands
+    in parallel, but with one PID, one event loop, and one log stream.
+    """
+    from .serve import main as serve_main
+
+    args = [
+        f"--host={host}",
+        f"--port={port}",
+        f"--dashboard-port={dashboard_port}",
+        f"--mcp-port={mcp_port}",
+        f"--log-level={log_level}",
+    ]
+    if no_mcp:
+        args.append("--no-mcp")
+    serve_main(args)
+
+
+@app.command()
 def stop(
     timeout: Annotated[
         float, typer.Option(help="Seconds to wait for graceful shutdown before SIGKILL."),
