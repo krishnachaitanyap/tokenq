@@ -17,3 +17,5 @@ dist/
 .idea/
 .vscode/
 TODO.md
+screenshots/node_modules/
+screenshots/package-lock.json
