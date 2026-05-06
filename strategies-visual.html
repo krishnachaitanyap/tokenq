@@ -832,12 +832,350 @@
   .dash-grade-detail { font-size: 11px; color: #9a9a9a; }
   .dash-grade-detail .score { font-size: 14px; color: #e8e8e8; font-weight: 600; }
 
+  /* ============ ARCHITECTURE — TOGGLE ============ */
+  .arch-toggle {
+    display: inline-flex; gap: 0; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 3px; margin: 14px 0;
+  }
+  .arch-toggle button {
+    background: transparent; color: var(--muted);
+    border: none; padding: 8px 16px; border-radius: 6px;
+    font-family: inherit; font-size: 13px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .arch-toggle button.active {
+    background: var(--accent); color: white; font-weight: 600;
+    box-shadow: 0 4px 12px -4px var(--accent);
+  }
+  .arch-view { display: none; }
+  .arch-view.show { display: block; }
+
+  /* ============ ARCHITECTURE — AWS-STYLE DIAGRAMS ============ */
+  .aws-frame {
+    background: linear-gradient(180deg, #161a24 0%, #0e1119 100%);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin: 16px 0;
+    box-shadow: 0 12px 40px -12px rgba(0,0,0,0.6);
+  }
+  .aws-frame svg { display: block; width: 100%; height: auto; }
+
+  .aws-frame .icon-grad-compute   { fill: url(#grad-compute); }
+  .aws-frame .icon-grad-storage   { fill: url(#grad-storage); }
+  .aws-frame .icon-grad-network   { fill: url(#grad-network); }
+  .aws-frame .icon-grad-security  { fill: url(#grad-security); }
+  .aws-frame .icon-grad-app       { fill: url(#grad-app); }
+  .aws-frame .icon-grad-ml        { fill: url(#grad-ml); }
+  .aws-frame .icon-grad-user      { fill: url(#grad-user); }
+
+  .aws-frame .zone-box {
+    fill: none; stroke-dasharray: 6 4; stroke-width: 1.5; rx: 12;
+  }
+  .aws-frame .zone-laptop    { stroke: #00d4ff; }
+  .aws-frame .zone-corporate { stroke: #f5b14a; }
+  .aws-frame .zone-cloud     { stroke: #c084fc; }
+  .aws-frame .zone-bg-laptop    { fill: rgba(0,212,255,0.04); }
+  .aws-frame .zone-bg-corporate { fill: rgba(245,177,74,0.04); }
+  .aws-frame .zone-bg-cloud     { fill: rgba(192,132,252,0.04); }
+
+  .aws-frame .zone-label-bg { fill: #161a24; }
+  .aws-frame .zone-label-text {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .aws-frame .zone-label-laptop    { fill: #00d4ff; }
+  .aws-frame .zone-label-corporate { fill: #f5b14a; }
+  .aws-frame .zone-label-cloud     { fill: #c084fc; }
+
+  .aws-frame .svc-name {
+    font-size: 11px; font-weight: 700; fill: #e7ecf3;
+    text-anchor: middle;
+  }
+  .aws-frame .svc-sub {
+    font-size: 9px; fill: #8a93a6; text-anchor: middle;
+  }
+  .aws-frame .svc-icon-text {
+    font-size: 24px; text-anchor: middle; dominant-baseline: middle;
+  }
+  .aws-frame .conn {
+    stroke: #5a6680; stroke-width: 1.6; fill: none;
+    stroke-dasharray: none;
+  }
+  .aws-frame .conn-label {
+    font-size: 9px; fill: #00d4ff; font-weight: 600;
+    font-family: ui-monospace, monospace;
+  }
+  .aws-frame .conn-label-bg { fill: #0e1119; }
+  .aws-frame .conn-warn { stroke: #f5b14a; }
+  .aws-frame .conn-label-warn { fill: #f5b14a; }
+  .aws-frame .conn-cold { stroke: #2a3142; stroke-dasharray: 3 3; }
+
+  .aws-legend {
+    display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0 4px;
+    font-size: 11px; color: var(--muted); padding: 10px 14px;
+    background: var(--bg); border-radius: 8px; border: 1px solid var(--border);
+  }
+  .aws-legend .lg-item {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .aws-legend .lg-sw {
+    width: 14px; height: 14px; border-radius: 3px; display: inline-block;
+  }
+
+  /* ============ ARCHITECTURE — BOX VIEW ============ */
+  .arch-frame {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px 24px; margin: 18px 0;
+    position: relative;
+  }
+  .arch-frame.current { border-left: 4px solid var(--accent-2); }
+  .arch-frame.proposed { border-left: 4px solid var(--accent); }
+
+  .arch-zone {
+    border-radius: 12px; padding: 18px; margin: 10px 0;
+    border: 1px dashed; position: relative;
+  }
+  .arch-zone-label {
+    position: absolute; top: -10px; left: 16px;
+    background: var(--panel); padding: 0 10px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .arch-zone.laptop {
+    border-color: var(--accent-2); background: rgba(0,212,255,0.04);
+  }
+  .arch-zone.laptop .arch-zone-label { color: var(--accent-2); }
+  .arch-zone.corporate {
+    border-color: var(--warn); background: rgba(245,177,74,0.04);
+  }
+  .arch-zone.corporate .arch-zone-label { color: var(--warn); }
+  .arch-zone.cloud {
+    border-color: var(--opus); background: rgba(192,132,252,0.04);
+  }
+  .arch-zone.cloud .arch-zone-label { color: var(--opus); }
+
+  .arch-box {
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; margin: 10px 0;
+    transition: all 0.2s;
+  }
+  .arch-box:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+    box-shadow: 0 8px 24px -8px var(--accent);
+  }
+  .arch-box .box-title {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 14px;
+  }
+  .arch-box .box-icon {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: rgba(124,92,255,0.15); display: flex;
+    align-items: center; justify-content: center; font-size: 18px;
+    flex-shrink: 0;
+  }
+  .arch-box .box-icon.laptop { background: rgba(0,212,255,0.15); color: var(--accent-2); }
+  .arch-box .box-icon.proxy  { background: rgba(56,225,161,0.15); color: var(--good); }
+  .arch-box .box-icon.gateway{ background: rgba(245,177,74,0.18); color: var(--warn); }
+  .arch-box .box-icon.cloud  { background: rgba(192,132,252,0.18); color: var(--opus); }
+  .arch-box .box-sub {
+    color: var(--muted); font-size: 11px; font-weight: 400; margin-left: 6px;
+  }
+  .arch-box .box-bullets {
+    margin: 10px 0 0 42px; padding: 0; list-style: none;
+    color: var(--muted); font-size: 12px; line-height: 1.7;
+  }
+  .arch-box .box-bullets li::before {
+    content: '› '; color: var(--accent); font-weight: 700;
+  }
+  .arch-box .box-bullets li.new::before { content: '✦ '; color: var(--good); }
+  .arch-box .box-bullets li.new {
+    color: var(--text);
+    background: linear-gradient(90deg, rgba(56,225,161,0.08), transparent);
+    border-radius: 4px; padding: 2px 8px;
+    margin-left: -8px;
+  }
+
+  .arch-arrow {
+    text-align: center; margin: 4px 0;
+    color: var(--muted); font-size: 12px;
+    position: relative;
+  }
+  .arch-arrow::before {
+    content: ''; display: block;
+    width: 2px; height: 20px;
+    background: var(--accent); margin: 0 auto 4px;
+    position: relative;
+  }
+  .arch-arrow .arrow-label {
+    background: var(--bg); padding: 4px 10px; border-radius: 14px;
+    border: 1px solid var(--border); display: inline-block;
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--accent-2);
+  }
+  .arch-arrow.warn .arrow-label { color: var(--warn); border-color: rgba(245,177,74,0.5); }
+  .arch-arrow.warn::before { background: var(--warn); }
+
+  .config-block {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; margin: 14px 0;
+    font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.7;
+    overflow-x: auto;
+  }
+  .config-block .comment { color: var(--muted); }
+  .config-block .var { color: var(--accent); font-weight: 600; }
+  .config-block .val { color: var(--accent-2); }
+  .config-block .new-line {
+    background: rgba(56,225,161,0.12);
+    margin: 0 -16px; padding: 2px 16px;
+    border-left: 3px solid var(--good);
+  }
+  .config-block .new-line .var { color: var(--good); }
+
+  .arch-compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0;
+  }
+  .arch-compare-card {
+    background: var(--panel-2); border-radius: 10px; padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .arch-compare-card.add { border-left: 3px solid var(--good); }
+  .arch-compare-card.keep { border-left: 3px solid var(--accent-2); }
+  .arch-compare-card h5 {
+    margin: 0 0 8px; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .arch-compare-card ul {
+    margin: 0; padding-left: 18px; font-size: 12px; color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ============ PRICING MATRIX ============ */
+  .price-axes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0; }
+  .price-axis {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; position: relative;
+  }
+  .price-axis .axis-name { font-weight: 700; font-size: 13px; }
+  .price-axis .axis-rate {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--accent-2); margin-top: 4px;
+  }
+  .price-axis .axis-mult {
+    position: absolute; top: 8px; right: 10px;
+    font-size: 10px; padding: 2px 6px; border-radius: 10px;
+    background: var(--bg); color: var(--muted); font-weight: 700;
+  }
+  .price-axis .axis-mult.high { background: rgba(255,107,107,0.15); color: var(--bad); }
+  .price-axis .axis-mult.med { background: rgba(245,177,74,0.15); color: var(--warn); }
+  .price-axis .axis-mult.low { background: rgba(56,225,161,0.15); color: var(--good); }
+  .price-axis .axis-desc { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: 220px repeat(5, 1fr);
+    gap: 4px; margin: 18px 0;
+  }
+  .matrix-cell {
+    padding: 10px 8px; text-align: center;
+    border-radius: 6px; font-size: 12px;
+    background: var(--panel-2); transition: all 0.2s;
+    position: relative; min-height: 56px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: help;
+  }
+  .matrix-cell.head {
+    background: transparent; color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    text-align: center; min-height: auto;
+  }
+  .matrix-cell.row-head {
+    background: transparent; text-align: left; padding-left: 0;
+    align-items: flex-start; justify-content: center;
+    color: var(--text); font-weight: 600; font-size: 13px;
+  }
+  .matrix-cell.row-head .row-sub {
+    color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 2px;
+  }
+  .matrix-cell.primary {
+    background: linear-gradient(135deg, rgba(56,225,161,0.25), rgba(56,225,161,0.1));
+    border: 1px solid var(--good);
+  }
+  .matrix-cell.primary .cell-icon { color: var(--good); }
+  .matrix-cell.secondary {
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.3);
+  }
+  .matrix-cell.secondary .cell-icon { color: var(--accent-2); }
+  .matrix-cell.none {
+    background: var(--panel-2); opacity: 0.4;
+  }
+  .matrix-cell.caution {
+    background: rgba(245,177,74,0.1);
+    border: 1px solid rgba(245,177,74,0.3);
+  }
+  .matrix-cell.caution .cell-icon { color: var(--warn); }
+  .cell-icon { font-size: 18px; line-height: 1; font-weight: 700; }
+  .cell-note {
+    font-size: 9px; color: var(--muted); margin-top: 2px;
+    line-height: 1.3;
+  }
+  .matrix-cell:hover {
+    transform: scale(1.04); z-index: 2;
+    box-shadow: 0 6px 16px -4px rgba(0,0,0,0.4);
+  }
+  .matrix-cell .matrix-tt {
+    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    margin-bottom: 8px; background: var(--panel);
+    border: 1px solid var(--accent); border-radius: 6px; padding: 8px 10px;
+    width: 220px; font-size: 11px; line-height: 1.5; color: var(--text);
+    text-align: left; pointer-events: none; opacity: 0;
+    transition: opacity 0.15s; z-index: 5;
+    box-shadow: 0 8px 24px -4px rgba(0,0,0,0.5);
+  }
+  .matrix-cell:hover .matrix-tt { opacity: 1; }
+
+  .matrix-legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 12px 0; font-size: 12px; }
+  .matrix-legend .lg-item {
+    display: flex; align-items: center; gap: 6px; color: var(--muted);
+  }
+  .matrix-legend .lg-sw {
+    width: 14px; height: 14px; border-radius: 4px; display: inline-block;
+  }
+  .matrix-legend .lg-sw.primary { background: rgba(56,225,161,0.4); border: 1px solid var(--good); }
+  .matrix-legend .lg-sw.secondary { background: rgba(0,212,255,0.15); border: 1px solid var(--accent-2); }
+  .matrix-legend .lg-sw.caution { background: rgba(245,177,74,0.15); border: 1px solid var(--warn); }
+  .matrix-legend .lg-sw.none { background: var(--panel-2); }
+
+  .pricing-math {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; font-family: ui-monospace, monospace; font-size: 12px;
+  }
+  .pricing-math .row {
+    display: grid; grid-template-columns: 200px 1fr 100px;
+    gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .pricing-math .row:last-child { border-bottom: none; }
+  .pricing-math .row.total {
+    margin-top: 6px; padding-top: 12px; border-top: 2px solid var(--accent);
+    font-weight: 700;
+  }
+  .pricing-math .lbl { color: var(--muted); }
+  .pricing-math .formula { color: var(--accent-2); }
+  .pricing-math .val { text-align: right; color: var(--text); font-weight: 600; }
+  .pricing-math .val.green { color: var(--good); }
+  .pricing-math .val.red { color: var(--bad); }
+
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
     aside { position: static; height: auto; }
     main { padding: 24px; }
     .dash-stats { grid-template-columns: repeat(2, 1fr); }
     .dash-grid2 { grid-template-columns: 1fr; }
+    .matrix-grid { grid-template-columns: 140px repeat(5, 1fr); font-size: 10px; }
+    .price-axes { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -848,8 +1186,12 @@
     <div class="brand">tokenq</div>
     <div class="brand-sub">visual strategy guide</div>
 
+    <h2>architecture</h2>
+    <a href="#arch">🏗️ Current vs enterprise</a>
+
     <h2>dashboard</h2>
     <a href="#dashboard">📊 Dashboard tour</a>
+    <a href="#pricing-matrix">💰 Pricing × strategy matrix</a>
 
     <h2>strategies</h2>
     <a href="#bandit" class="active">1. Bandit Router <span class="tag">live</span></a>
@@ -873,6 +1215,662 @@
   </aside>
 
   <main>
+    <span class="pill">🏗️ architecture</span>
+    <h1 id="arch">Current vs enterprise architecture</h1>
+    <p class="lead">
+      tokenq runs as a local proxy on the developer's machine. The default deployment talks directly to Anthropic; the enterprise
+      deployment adds a single hop to a corporate LLM gateway. Same code, one env var difference.
+    </p>
+
+    <div class="arch-toggle" role="tablist">
+      <button id="btn-view-aws" class="active" type="button">☁️ AWS-style view</button>
+      <button id="btn-view-boxes" type="button">📦 Stacked-box view</button>
+    </div>
+
+    <!-- ===================== AWS-STYLE VIEW (default) ===================== -->
+    <div class="arch-view show" id="arch-aws">
+
+      <div class="aws-legend">
+        <div class="lg-item"><span class="lg-sw" style="background:#FF9900"></span> Compute (proxy / gateway)</div>
+        <div class="lg-item"><span class="lg-sw" style="background:#569A31"></span> Storage (DB / logs)</div>
+        <div class="lg-item"><span class="lg-sw" style="background:#8C4FFF"></span> Networking</div>
+        <div class="lg-item"><span class="lg-sw" style="background:#DD344C"></span> Security / Auth</div>
+        <div class="lg-item"><span class="lg-sw" style="background:#2074d5"></span> Application / client</div>
+        <div class="lg-item"><span class="lg-sw" style="background:#01A88D"></span> ML / external API</div>
+      </div>
+
+      <h2>📐 Current — direct to Anthropic (consumer / individual)</h2>
+      <p class="muted" style="font-size:13px;">
+        Single zone on the laptop, one external API. Solid line = HTTPS over public internet.
+      </p>
+
+      <div class="aws-frame">
+        <svg viewBox="0 0 1100 460" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="grad-compute" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFB840"/><stop offset="100%" stop-color="#FF8800"/>
+            </linearGradient>
+            <linearGradient id="grad-storage" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7AB55C"/><stop offset="100%" stop-color="#3F7E1E"/>
+            </linearGradient>
+            <linearGradient id="grad-network" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#A988FF"/><stop offset="100%" stop-color="#7034CB"/>
+            </linearGradient>
+            <linearGradient id="grad-security" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F26978"/><stop offset="100%" stop-color="#B61E37"/>
+            </linearGradient>
+            <linearGradient id="grad-app" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4D9EF6"/><stop offset="100%" stop-color="#1A5DAD"/>
+            </linearGradient>
+            <linearGradient id="grad-ml" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#34C7B2"/><stop offset="100%" stop-color="#017A66"/>
+            </linearGradient>
+            <linearGradient id="grad-user" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7C8898"/><stop offset="100%" stop-color="#3D4654"/>
+            </linearGradient>
+            <marker id="arrow-aws" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#5a6680"/>
+            </marker>
+            <marker id="arrow-aws-warn" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#f5b14a"/>
+            </marker>
+          </defs>
+
+          <!-- Zone: Developer Laptop -->
+          <rect class="zone-box zone-laptop zone-bg-laptop" x="40" y="50" width="650" height="370" rx="14"/>
+          <rect class="zone-label-bg" x="58" y="40" width="180" height="20" rx="4"/>
+          <text class="zone-label-text zone-label-laptop" x="72" y="54">DEVELOPER LAPTOP · localhost</text>
+
+          <!-- Developer icon -->
+          <g transform="translate(75, 175)">
+            <rect class="icon-grad-user" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">👤</text>
+            <text class="svc-name" x="28" y="76">Developer</text>
+            <text class="svc-sub" x="28" y="90">human</text>
+          </g>
+
+          <!-- Claude Code client -->
+          <g transform="translate(195, 175)">
+            <rect class="icon-grad-app" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">💻</text>
+            <text class="svc-name" x="28" y="76">Claude Code</text>
+            <text class="svc-sub" x="28" y="90">SDK consumer</text>
+          </g>
+
+          <!-- tokenq proxy -->
+          <g transform="translate(345, 105)">
+            <rect class="icon-grad-compute" x="0" y="0" width="64" height="64" rx="8"/>
+            <text class="svc-icon-text" x="32" y="42" fill="white">🛡️</text>
+            <text class="svc-name" x="32" y="84">tokenq proxy</text>
+            <text class="svc-sub" x="32" y="98">port 8089</text>
+            <text class="svc-sub" x="32" y="110">8-stage pipeline</text>
+          </g>
+
+          <!-- SQLite DB -->
+          <g transform="translate(345, 270)">
+            <rect class="icon-grad-storage" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">💾</text>
+            <text class="svc-name" x="28" y="76">SQLite</text>
+            <text class="svc-sub" x="28" y="90">~/.tokenq/tokenq.db</text>
+          </g>
+
+          <!-- Dashboard -->
+          <g transform="translate(530, 175)">
+            <rect class="icon-grad-app" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">📊</text>
+            <text class="svc-name" x="28" y="76">Dashboard</text>
+            <text class="svc-sub" x="28" y="90">port 8090</text>
+          </g>
+
+          <!-- Zone: Public Cloud -->
+          <rect class="zone-box zone-cloud zone-bg-cloud" x="780" y="50" width="280" height="370" rx="14"/>
+          <rect class="zone-label-bg" x="798" y="40" width="120" height="20" rx="4"/>
+          <text class="zone-label-text zone-label-cloud" x="812" y="54">PUBLIC CLOUD</text>
+
+          <!-- Anthropic API -->
+          <g transform="translate(880, 175)">
+            <rect class="icon-grad-ml" x="0" y="0" width="80" height="80" rx="8"/>
+            <text class="svc-icon-text" x="40" y="50" fill="white" style="font-size:32px;">🤖</text>
+            <text class="svc-name" x="40" y="100">Anthropic API</text>
+            <text class="svc-sub" x="40" y="114">api.anthropic.com</text>
+          </g>
+
+          <!-- Connections -->
+          <!-- Dev → Client -->
+          <line class="conn" x1="131" y1="203" x2="195" y2="203" marker-end="url(#arrow-aws)"/>
+
+          <!-- Client → tokenq -->
+          <line class="conn" x1="251" y1="203" x2="345" y2="140" marker-end="url(#arrow-aws)"/>
+          <rect class="conn-label-bg" x="262" y="160" width="74" height="14" rx="3"/>
+          <text class="conn-label" x="299" y="171" text-anchor="middle">localhost:8089</text>
+
+          <!-- tokenq → SQLite -->
+          <line class="conn" x1="377" y1="170" x2="377" y2="270" marker-end="url(#arrow-aws)"/>
+          <rect class="conn-label-bg" x="385" y="210" width="50" height="14" rx="3"/>
+          <text class="conn-label" x="410" y="221" text-anchor="middle">write</text>
+
+          <!-- Dashboard → SQLite -->
+          <line class="conn" x1="540" y1="231" x2="408" y2="290" marker-end="url(#arrow-aws)"/>
+          <rect class="conn-label-bg" x="453" y="262" width="44" height="14" rx="3"/>
+          <text class="conn-label" x="475" y="273" text-anchor="middle">read</text>
+
+          <!-- tokenq → Anthropic (cross-zone) -->
+          <line class="conn" x1="409" y1="135" x2="880" y2="200" marker-end="url(#arrow-aws)"/>
+          <rect class="conn-label-bg" x="555" y="148" width="180" height="16" rx="3"/>
+          <text class="conn-label" x="645" y="160" text-anchor="middle">HTTPS · personal API key</text>
+        </svg>
+      </div>
+
+      <div class="config-block">
+<span class="comment"># Client</span>
+<span class="var">export</span> ANTHROPIC_BASE_URL=<span class="val">http://127.0.0.1:8089</span>
+<span class="var">export</span> ANTHROPIC_API_KEY=<span class="val">sk-ant-...</span>   <span class="comment"># personal key, passed through unchanged</span>
+
+<span class="comment"># tokenq proxy (default upstream = Anthropic)</span>
+<span class="var">tokenq</span> start
+      </div>
+
+      <h2 style="margin-top: 48px;">🏢 Proposed enterprise — additional hop to LLM gateway</h2>
+      <p class="muted" style="font-size:13px;">
+        Three zones now: laptop → corporate VPC → public cloud. Solid orange line crosses the WAN; the gateway
+        terminates the SSO token and re-issues calls to one of multiple LLM providers using corporate keys.
+      </p>
+
+      <div class="aws-frame">
+        <svg viewBox="0 0 1500 540" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="grad-compute2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFB840"/><stop offset="100%" stop-color="#FF8800"/>
+            </linearGradient>
+            <linearGradient id="grad-storage2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7AB55C"/><stop offset="100%" stop-color="#3F7E1E"/>
+            </linearGradient>
+            <linearGradient id="grad-network2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#A988FF"/><stop offset="100%" stop-color="#7034CB"/>
+            </linearGradient>
+            <linearGradient id="grad-security2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F26978"/><stop offset="100%" stop-color="#B61E37"/>
+            </linearGradient>
+            <linearGradient id="grad-app2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4D9EF6"/><stop offset="100%" stop-color="#1A5DAD"/>
+            </linearGradient>
+            <linearGradient id="grad-ml2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#34C7B2"/><stop offset="100%" stop-color="#017A66"/>
+            </linearGradient>
+            <linearGradient id="grad-user2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7C8898"/><stop offset="100%" stop-color="#3D4654"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Zone: Laptop -->
+          <rect class="zone-box zone-laptop zone-bg-laptop" x="30" y="50" width="430" height="450" rx="14"/>
+          <rect class="zone-label-bg" x="48" y="40" width="180" height="20" rx="4"/>
+          <text class="zone-label-text zone-label-laptop" x="62" y="54">EMPLOYEE LAPTOP</text>
+
+          <g transform="translate(60, 130)">
+            <rect fill="url(#grad-app2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">💻</text>
+            <text class="svc-name" x="28" y="76">Claude Code</text>
+            <text class="svc-sub" x="28" y="90">SSO token in</text>
+            <text class="svc-sub" x="28" y="102">Authorization hdr</text>
+          </g>
+
+          <g transform="translate(200, 110)">
+            <rect fill="url(#grad-compute2)" x="0" y="0" width="64" height="64" rx="8"/>
+            <text class="svc-icon-text" x="32" y="42" fill="white">🛡️</text>
+            <text class="svc-name" x="32" y="84">tokenq proxy</text>
+            <text class="svc-sub" x="32" y="98">port 8089</text>
+            <text class="svc-sub" x="32" y="110">+ header inject</text>
+            <text class="svc-sub" x="32" y="122">+ mTLS client cert</text>
+          </g>
+
+          <g transform="translate(345, 130)">
+            <rect fill="url(#grad-storage2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">💾</text>
+            <text class="svc-name" x="28" y="76">SQLite</text>
+            <text class="svc-sub" x="28" y="90">per-user telemetry</text>
+          </g>
+
+          <g transform="translate(200, 290)">
+            <rect fill="url(#grad-app2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">📊</text>
+            <text class="svc-name" x="28" y="76">Dashboard</text>
+            <text class="svc-sub" x="28" y="90">port 8090</text>
+          </g>
+
+          <g transform="translate(345, 290)">
+            <rect fill="url(#grad-network2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">📡</text>
+            <text class="svc-name" x="28" y="76">Telemetry sink</text>
+            <text class="svc-sub" x="28" y="90">optional · push</text>
+          </g>
+
+          <!-- Zone: Corporate VPC -->
+          <rect class="zone-box zone-corporate zone-bg-corporate" x="510" y="50" width="540" height="450" rx="14"/>
+          <rect class="zone-label-bg" x="528" y="40" width="220" height="20" rx="4"/>
+          <text class="zone-label-text zone-label-corporate" x="542" y="54">CORPORATE VPC · private network</text>
+
+          <g transform="translate(545, 130)">
+            <rect fill="url(#grad-security2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">🔐</text>
+            <text class="svc-name" x="28" y="76">SSO / OIDC</text>
+            <text class="svc-sub" x="28" y="90">Okta / Azure AD</text>
+          </g>
+
+          <g transform="translate(700, 110)">
+            <rect fill="url(#grad-network2)" x="0" y="0" width="80" height="80" rx="8"/>
+            <text class="svc-icon-text" x="40" y="50" fill="white" style="font-size:32px;">🛂</text>
+            <text class="svc-name" x="40" y="100">LLM Gateway</text>
+            <text class="svc-sub" x="40" y="114">LiteLLM / Kong AI /</text>
+            <text class="svc-sub" x="40" y="126">Cloudflare AI Gateway</text>
+          </g>
+
+          <g transform="translate(880, 130)">
+            <rect fill="url(#grad-security2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">🛑</text>
+            <text class="svc-name" x="28" y="76">DLP / PII</text>
+            <text class="svc-sub" x="28" y="90">scrub on egress</text>
+          </g>
+
+          <g transform="translate(545, 290)">
+            <rect fill="url(#grad-storage2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">📜</text>
+            <text class="svc-name" x="28" y="76">Audit log</text>
+            <text class="svc-sub" x="28" y="90">SIEM / Splunk</text>
+          </g>
+
+          <g transform="translate(715, 290)">
+            <rect fill="url(#grad-storage2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">🚦</text>
+            <text class="svc-name" x="28" y="76">Rate limits</text>
+            <text class="svc-sub" x="28" y="90">per-team quota</text>
+          </g>
+
+          <g transform="translate(885, 290)">
+            <rect fill="url(#grad-storage2)" x="0" y="0" width="56" height="56" rx="8"/>
+            <text class="svc-icon-text" x="28" y="36" fill="white">📈</text>
+            <text class="svc-name" x="28" y="76">Cost rollup</text>
+            <text class="svc-sub" x="28" y="90">per-team billing</text>
+          </g>
+
+          <!-- Zone: Public Cloud -->
+          <rect class="zone-box zone-cloud zone-bg-cloud" x="1100" y="50" width="370" height="450" rx="14"/>
+          <rect class="zone-label-bg" x="1118" y="40" width="170" height="20" rx="4"/>
+          <text class="zone-label-text zone-label-cloud" x="1132" y="54">PUBLIC CLOUD · multi-vendor</text>
+
+          <g transform="translate(1130, 110)">
+            <rect fill="url(#grad-ml2)" x="0" y="0" width="80" height="80" rx="8"/>
+            <text class="svc-icon-text" x="40" y="50" fill="white" style="font-size:30px;">🤖</text>
+            <text class="svc-name" x="40" y="100">Anthropic</text>
+            <text class="svc-sub" x="40" y="114">api.anthropic.com</text>
+          </g>
+
+          <g transform="translate(1290, 110)">
+            <rect fill="url(#grad-ml2)" x="0" y="0" width="80" height="80" rx="8"/>
+            <text class="svc-icon-text" x="40" y="50" fill="white" style="font-size:30px;">☁️</text>
+            <text class="svc-name" x="40" y="100">Azure OpenAI</text>
+            <text class="svc-sub" x="40" y="114">via APIM</text>
+          </g>
+
+          <g transform="translate(1130, 290)">
+            <rect fill="url(#grad-ml2)" x="0" y="0" width="80" height="80" rx="8"/>
+            <text class="svc-icon-text" x="40" y="50" fill="white" style="font-size:30px;">🪨</text>
+            <text class="svc-name" x="40" y="100">AWS Bedrock</text>
+            <text class="svc-sub" x="40" y="114">multi-region</text>
+          </g>
+
+          <g transform="translate(1290, 290)">
+            <rect fill="url(#grad-ml2)" x="0" y="0" width="80" height="80" rx="8"/>
+            <text class="svc-icon-text" x="40" y="50" fill="white" style="font-size:30px;">🌐</text>
+            <text class="svc-name" x="40" y="100">Vertex AI</text>
+            <text class="svc-sub" x="40" y="114">GCP fallback</text>
+          </g>
+
+          <!-- Connections -->
+          <line class="conn" x1="116" y1="158" x2="200" y2="142" marker-end="url(#arrow-aws)"/>
+          <rect class="conn-label-bg" x="118" y="120" width="78" height="14" rx="3"/>
+          <text class="conn-label" x="157" y="131" text-anchor="middle">localhost:8089</text>
+
+          <line class="conn" x1="265" y1="170" x2="345" y2="158" marker-end="url(#arrow-aws)"/>
+          <text class="conn-label" x="305" y="148" text-anchor="middle">write</text>
+
+          <line class="conn" x1="228" y1="290" x2="228" y2="200" marker-end="url(#arrow-aws)"/>
+          <text class="conn-label" x="245" y="248">read</text>
+
+          <line class="conn conn-cold" x1="345" y1="318" x2="265" y2="318" marker-end="url(#arrow-aws)"/>
+          <text class="conn-label" x="300" y="312" text-anchor="middle" style="fill:#5a6680;">push (opt)</text>
+
+          <!-- tokenq → Gateway (cross-zone) — main flow, warning color -->
+          <line class="conn conn-warn" x1="265" y1="142" x2="700" y2="142" marker-end="url(#arrow-aws-warn)" stroke-width="2.5"/>
+          <rect class="conn-label-bg" x="395" y="115" width="200" height="20" rx="3"/>
+          <text class="conn-label-warn" x="495" y="129" text-anchor="middle" style="font-weight:700;">HTTPS · mTLS · SSO token</text>
+
+          <!-- Gateway → SSO check -->
+          <line class="conn" x1="700" y1="160" x2="601" y2="160" marker-end="url(#arrow-aws)"/>
+
+          <!-- Gateway → DLP -->
+          <line class="conn" x1="780" y1="160" x2="880" y2="160" marker-end="url(#arrow-aws)"/>
+
+          <!-- Gateway → audit / rate / cost -->
+          <line class="conn" x1="730" y1="190" x2="600" y2="290" marker-end="url(#arrow-aws)"/>
+          <line class="conn" x1="740" y1="190" x2="743" y2="290" marker-end="url(#arrow-aws)"/>
+          <line class="conn" x1="760" y1="190" x2="900" y2="290" marker-end="url(#arrow-aws)"/>
+
+          <!-- Gateway → Public Cloud (multi-vendor) -->
+          <line class="conn" x1="780" y1="135" x2="1130" y2="135" marker-end="url(#arrow-aws)"/>
+          <line class="conn" x1="780" y1="155" x2="1290" y2="135" marker-end="url(#arrow-aws)"/>
+          <line class="conn" x1="780" y1="175" x2="1130" y2="315" marker-end="url(#arrow-aws)"/>
+          <line class="conn" x1="780" y1="185" x2="1290" y2="315" marker-end="url(#arrow-aws)"/>
+          <rect class="conn-label-bg" x="900" y="98" width="220" height="16" rx="3"/>
+          <text class="conn-label" x="1010" y="110" text-anchor="middle">corporate API key · provider chosen</text>
+        </svg>
+      </div>
+
+      <div class="config-block">
+<span class="comment"># Client (SSO token instead of personal API key)</span>
+<span class="var">export</span> ANTHROPIC_BASE_URL=<span class="val">http://127.0.0.1:8089</span>
+<span class="var">export</span> ANTHROPIC_API_KEY=<span class="val">$(corp-cli get-llm-token)</span>
+
+<span class="comment"># tokenq proxy — point upstream at the corporate gateway</span>
+<div class="new-line"><span class="var">export</span> TOKENQ_UPSTREAM=<span class="val">https://llm-gw.corp.example.com</span></div>
+<div class="new-line"><span class="var">export</span> TOKENQ_FORWARD_HEADERS=<span class="val">X-Tenant-Id,X-User-Email,X-Project</span></div>
+<div class="new-line"><span class="var">export</span> TOKENQ_MTLS_CERT=<span class="val">/etc/corp/llm-client.pem</span></div>
+<div class="new-line"><span class="var">export</span> TOKENQ_TELEMETRY_SINK=<span class="val">https://obs.corp.example.com/tokenq</span></div>
+<span class="var">tokenq</span> start
+      </div>
+
+      <div class="callout">
+        <strong>Reading the diagram:</strong> the dashed boxes are deployment zones (laptop / corp VPC / public cloud). Service icons follow AWS conventions:
+        <strong style="color:#FF9900">orange = compute</strong>, <strong style="color:#569A31">green = storage</strong>,
+        <strong style="color:#8C4FFF">purple = networking</strong>, <strong style="color:#DD344C">red = security</strong>,
+        <strong style="color:#01A88D">teal = ML / external API</strong>. The orange line is the only connection that leaves the laptop —
+        every cache hit short-circuits before that line.
+      </div>
+    </div>
+
+    <!-- ===================== STACKED-BOX VIEW ===================== -->
+    <div class="arch-view" id="arch-boxes">
+
+    <h2>📐 Current — direct to Anthropic (consumer / individual)</h2>
+    <p class="muted">
+      Today's default. The user sets <code>ANTHROPIC_BASE_URL=http://127.0.0.1:8089</code>, restarts Claude Code, and that's it.
+      tokenq intercepts every <code>/v1/messages</code> call, runs the 8-strategy pipeline, and forwards the result directly to
+      <code>api.anthropic.com</code> using the user's personal API key.
+    </p>
+
+    <div class="arch-frame current">
+      <div class="arch-zone laptop">
+        <div class="arch-zone-label">developer laptop</div>
+
+        <div class="arch-box">
+          <div class="box-title">
+            <div class="box-icon laptop">💻</div>
+            <div>Claude Code / Cursor / Custom client<span class="box-sub">— any Anthropic SDK consumer</span></div>
+          </div>
+          <ul class="box-bullets">
+            <li>Reads <code>ANTHROPIC_BASE_URL</code> env var</li>
+            <li>Sends <code>POST /v1/messages</code> with personal Anthropic API key in <code>x-api-key</code> header</li>
+          </ul>
+        </div>
+
+        <div class="arch-arrow"><span class="arrow-label">HTTP · localhost</span></div>
+
+        <div class="arch-box">
+          <div class="box-title">
+            <div class="box-icon proxy">🛡️</div>
+            <div>tokenq local proxy<span class="box-sub">— port 8089, in-process</span></div>
+          </div>
+          <ul class="box-bullets">
+            <li>Intercept <code>/v1/messages</code> → run 8-strategy pipeline (bandit, compactor, cache, dedup, compress, skills, output, bigmemory)</li>
+            <li>Persist every request to <code>~/.tokenq/tokenq.db</code> (SQLite)</li>
+            <li>Serve dashboard at <code>:8090</code> (read-only view of the same DB)</li>
+            <li>API key is <strong>passed through unchanged</strong> — tokenq never reads or stores it</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arch-arrow"><span class="arrow-label">HTTPS · TLS · public internet</span></div>
+
+      <div class="arch-zone cloud">
+        <div class="arch-zone-label">public cloud</div>
+        <div class="arch-box">
+          <div class="box-title">
+            <div class="box-icon cloud">☁️</div>
+            <div>Anthropic API<span class="box-sub">— api.anthropic.com</span></div>
+          </div>
+          <ul class="box-bullets">
+            <li>Authenticates via the user's personal API key</li>
+            <li>Bills the user's personal account directly</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 8px;">Configuration (today's default)</h3>
+      <div class="config-block">
+<span class="comment"># Client (Claude Code, Cursor, etc.) — set once, works everywhere</span>
+<span class="var">export</span> ANTHROPIC_BASE_URL=<span class="val">http://127.0.0.1:8089</span>
+<span class="var">export</span> ANTHROPIC_API_KEY=<span class="val">sk-ant-...</span>   <span class="comment"># personal key, passed through unchanged</span>
+
+<span class="comment"># tokenq proxy — TOKENQ_UPSTREAM defaults to Anthropic</span>
+<span class="var">tokenq</span> start
+<span class="comment"># equivalent to: TOKENQ_UPSTREAM=https://api.anthropic.com tokenq start</span>
+      </div>
+
+      <div class="callout">
+        <strong>Why this works for individuals:</strong> zero ops burden — no SSO, no team accounts, no audit trail required.
+        The proxy is invisible to the rest of the stack. Each developer manages their own key and sees their own dashboard.
+      </div>
+    </div>
+
+    <h2 style="margin-top: 56px;">🏢 Proposed enterprise — additional hop to LLM gateway</h2>
+    <p class="muted">
+      Enterprises typically don't want raw Anthropic API keys distributed to laptops. They route all LLM traffic through
+      a corporate gateway that handles SSO authentication, audit logging, DLP, rate limiting, and multi-vendor routing
+      (Anthropic / Azure OpenAI / AWS Bedrock). The gateway holds the real provider keys.
+    </p>
+
+    <p class="muted">
+      <strong>Good news:</strong> the only required change is one env var — <code>TOKENQ_UPSTREAM</code> already exists
+      (<code>config.py:4</code>). Point it at the gateway and tokenq forwards there instead of Anthropic. The 8-strategy
+      pipeline still runs locally — compression, caching, and bandit decisions all happen <em>before</em> traffic leaves the laptop.
+    </p>
+
+    <div class="arch-frame proposed">
+      <div class="arch-zone laptop">
+        <div class="arch-zone-label">employee laptop</div>
+
+        <div class="arch-box">
+          <div class="box-title">
+            <div class="box-icon laptop">💻</div>
+            <div>Claude Code / Cursor / Custom client</div>
+          </div>
+          <ul class="box-bullets">
+            <li>Reads <code>ANTHROPIC_BASE_URL</code> env var (same as before)</li>
+            <li class="new">Auth header now carries an <strong>SSO/OIDC token</strong>, not an Anthropic API key</li>
+          </ul>
+        </div>
+
+        <div class="arch-arrow"><span class="arrow-label">HTTP · localhost</span></div>
+
+        <div class="arch-box">
+          <div class="box-title">
+            <div class="box-icon proxy">🛡️</div>
+            <div>tokenq local proxy<span class="box-sub">— same port 8089</span></div>
+          </div>
+          <ul class="box-bullets">
+            <li>Intercept <code>/v1/messages</code> → run 8-strategy pipeline (unchanged)</li>
+            <li>Persist to per-user <code>~/.tokenq/tokenq.db</code> (private telemetry stays local)</li>
+            <li>Dashboard at <code>:8090</code> (per-developer cost visibility)</li>
+            <li class="new">Forward to <strong>corporate gateway</strong> instead of Anthropic (single env var)</li>
+            <li class="new">Optionally inject <code>X-Tenant-Id</code>, <code>X-User-Email</code>, <code>X-Project</code> headers from local config</li>
+            <li class="new">Optionally present a corporate <strong>mTLS client cert</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arch-arrow warn"><span class="arrow-label">HTTPS · mTLS · corporate VPN/SASE</span></div>
+
+      <div class="arch-zone corporate">
+        <div class="arch-zone-label">corporate VPC / private network</div>
+        <div class="arch-box">
+          <div class="box-title">
+            <div class="box-icon gateway">🛂</div>
+            <div>Enterprise LLM Gateway<span class="box-sub">— e.g. internal proxy, LiteLLM, Cloudflare AI Gateway, Kong AI</span></div>
+          </div>
+          <ul class="box-bullets">
+            <li>SSO/OIDC token validation (Okta, Azure AD, etc.)</li>
+            <li>Per-team rate limits + quota enforcement</li>
+            <li>DLP / PII scrubbing on the request body</li>
+            <li>Append audit log entry → SIEM (Splunk, Datadog)</li>
+            <li>Model whitelist enforcement (e.g. block deprecated model IDs)</li>
+            <li>Multi-vendor routing: Anthropic / Azure OpenAI / Bedrock</li>
+            <li>Aggregate billing reporting per-team</li>
+            <li>Holds the <strong>real provider API keys</strong> — never on laptops</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arch-arrow"><span class="arrow-label">HTTPS · provider API key</span></div>
+
+      <div class="arch-zone cloud">
+        <div class="arch-zone-label">public cloud</div>
+        <div class="arch-box">
+          <div class="box-title">
+            <div class="box-icon cloud">☁️</div>
+            <div>Anthropic API <span style="color:var(--muted);font-size:11px;">(or Azure OpenAI / AWS Bedrock / Vertex)</span></div>
+          </div>
+          <ul class="box-bullets">
+            <li>Authenticated by the gateway's <em>service account</em> key</li>
+            <li>Billed to the corporate Anthropic account</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 8px;">Configuration (enterprise)</h3>
+      <div class="config-block">
+<span class="comment"># Client side — same as before, but uses SSO token instead of API key</span>
+<span class="var">export</span> ANTHROPIC_BASE_URL=<span class="val">http://127.0.0.1:8089</span>
+<span class="var">export</span> ANTHROPIC_API_KEY=<span class="val">$(corp-cli get-llm-token)</span>   <span class="comment"># short-lived OIDC token</span>
+
+<span class="comment"># tokenq proxy — point upstream at the gateway</span>
+<div class="new-line"><span class="var">export</span> TOKENQ_UPSTREAM=<span class="val">https://llm-gw.corp.example.com</span></div>
+<div class="new-line"><span class="var">export</span> TOKENQ_FORWARD_HEADERS=<span class="val">X-Tenant-Id,X-User-Email,X-Project</span></div>
+<div class="new-line"><span class="var">export</span> TOKENQ_MTLS_CERT=<span class="val">/etc/corp/llm-client.pem</span></div>
+<span class="var">tokenq</span> start
+
+<span class="comment"># Optional: ship per-employee dashboard data to a central collector</span>
+<span class="var">export</span> TOKENQ_TELEMETRY_SINK=<span class="val">https://obs.corp.example.com/tokenq</span>
+      </div>
+
+      <h3 style="margin: 24px 0 12px;">What stays vs what's added</h3>
+      <div class="arch-compare">
+        <div class="arch-compare-card keep">
+          <h5>🔵 unchanged from current</h5>
+          <ul>
+            <li>All 8 pipeline strategies run identically</li>
+            <li>Local SQLite at <code>~/.tokenq/tokenq.db</code></li>
+            <li>Per-developer dashboard on <code>:8090</code></li>
+            <li>Cache hits never leave the laptop</li>
+            <li>Compression happens before egress (less WAN, less gateway load)</li>
+            <li>Zero changes to client integration code</li>
+          </ul>
+        </div>
+        <div class="arch-compare-card add">
+          <h5>🟢 new in enterprise mode</h5>
+          <ul>
+            <li><code>TOKENQ_UPSTREAM</code> points at gateway URL</li>
+            <li>Header injection from local config (<code>TOKENQ_FORWARD_HEADERS</code>)</li>
+            <li>Optional mTLS client cert (<code>TOKENQ_MTLS_CERT</code>)</li>
+            <li>Auth header carries SSO token, not Anthropic key</li>
+            <li>Optional telemetry sink for centralized cost dashboards</li>
+            <li>(Gateway side: SSO, audit, DLP, multi-vendor routing)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Why tokenq belongs <em>before</em> the gateway, not behind it:</strong> compression, cache hits, and bandit decisions
+        all need to happen <em>before</em> traffic crosses the corporate WAN. A cache hit on the laptop is a 0ms response;
+        a cache hit at the gateway is still a network roundtrip. tokenq's compression also reduces WAN bandwidth and gateway load —
+        the gateway sees an already-trimmed request body, so its rate limits stretch further.
+      </div>
+    </div>
+
+    </div>
+    <!-- end #arch-boxes -->
+
+    <h2 style="margin-top: 56px;">🎯 Migration path</h2>
+    <div class="panel">
+      <div class="dec-step">
+        <div class="dec-q">1. Rolling out to one team (week 1).</div>
+        <div class="dec-a">Pilot team installs tokenq the consumer way (<code>tokenq install</code> + <code>ANTHROPIC_BASE_URL</code>). Validate that the dashboard surfaces actual savings on their workload. No gateway needed yet.</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">2. Stand up the gateway in shadow mode (week 2-3).</div>
+        <div class="dec-a">Deploy the LLM gateway alongside the existing direct-to-Anthropic flow. Have it validate SSO tokens but pass through unchanged. Monitor for auth failures and request-shape compatibility issues.</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">3. Flip <code>TOKENQ_UPSTREAM</code> for pilot team (week 4).</div>
+        <div class="dec-a">Push a new env config to pilot team's laptops. They restart Claude Code; nothing else changes for them. Verify dashboard still works (tokenq's local DB is unaffected by upstream changes).</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">4. Enable gateway-side governance (week 5+).</div>
+        <div class="dec-a">Turn on DLP scanning, per-team rate limits, audit logging. The gateway can now reject specific request shapes — tokenq's pipeline still ran, so even rejected requests have local telemetry.</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">5. Centralized cost rollup (week 6+).</div>
+        <div class="dec-a">Optional: ship per-employee tokenq DBs to a central observability sink. The gateway already knows total spend; tokenq adds the *strategy-level breakdown* (which compression / which cache hits / which bandit decisions saved how much) per developer.</div>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 56px;">🔐 Security and compliance posture</h2>
+    <div class="panel">
+      <table>
+        <thead>
+          <tr><th>concern</th><th>current</th><th>enterprise</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>API key distribution</td>
+            <td><span style="color:var(--warn)">⚠ each laptop holds a personal key</span></td>
+            <td><span style="color:var(--good)">✓ keys live on the gateway only; laptops use SSO tokens</span></td>
+          </tr>
+          <tr>
+            <td>Audit / SIEM</td>
+            <td><span style="color:var(--muted)">— local SQLite only</span></td>
+            <td><span style="color:var(--good)">✓ gateway logs every call to SIEM</span></td>
+          </tr>
+          <tr>
+            <td>PII / DLP</td>
+            <td><span style="color:var(--muted)">— not enforced</span></td>
+            <td><span style="color:var(--good)">✓ scanned at the gateway before egress</span></td>
+          </tr>
+          <tr>
+            <td>Multi-vendor (Azure / Bedrock)</td>
+            <td><span style="color:var(--muted)">— Anthropic only</span></td>
+            <td><span style="color:var(--good)">✓ gateway can swap providers per request</span></td>
+          </tr>
+          <tr>
+            <td>Per-developer telemetry</td>
+            <td><span style="color:var(--good)">✓ rich dashboard on laptop</span></td>
+            <td><span style="color:var(--good)">✓ same, plus optional central rollup</span></td>
+          </tr>
+          <tr>
+            <td>Pipeline savings (8 strategies)</td>
+            <td><span style="color:var(--good)">✓ runs locally</span></td>
+            <td><span style="color:var(--good)">✓ runs locally — savings happen before WAN egress</span></td>
+          </tr>
+          <tr>
+            <td>Cache hit latency</td>
+            <td><span style="color:var(--good)">✓ ~2ms (laptop)</span></td>
+            <td><span style="color:var(--good)">✓ ~2ms (laptop) — never reaches gateway</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid var(--border); margin: 80px 0 0;">
+
     <span class="pill">📊 dashboard tour</span>
     <h1 id="dashboard">Reading the dashboard</h1>
     <p class="lead">
@@ -2354,6 +3352,253 @@
           <tr><td><span class="badge haiku">8. Dedup</span></td><td>Repeated tool_result blocks</td><td>per turn, dominant on retry-heavy sessions</td><td>~20–80% on agent loops</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid var(--border); margin: 80px 0 0;">
+
+    <!-- ===================================================================
+         PRICING × STRATEGY MATRIX
+         =================================================================== -->
+    <span class="pill" style="margin-top: 48px;">💰 reference</span>
+    <h1 id="pricing-matrix">Pricing × strategy matrix</h1>
+    <p class="lead">
+      Anthropic charges along five axes. Each tokenq strategy is built to attack one or more of them — some directly,
+      some by reshaping the prompt so a different axis benefits. Hover any cell for the exact mechanism.
+    </p>
+
+    <h2>The 5 Anthropic pricing axes</h2>
+    <p class="muted">
+      Anthropic prices <strong>per million tokens, not per call</strong>. A "token" is roughly 0.75 words of English (or ~4 characters of code).
+      Rates shown are Opus base prices. Sonnet is 1/5, Haiku is 1/15. The cache multipliers apply on top of whichever model you're using.
+    </p>
+
+    <div class="callout">
+      <strong>Quick math:</strong> a typical Claude Code turn might send 50,000 input tokens (system + tools + history + cache reads) and generate
+      4,000 output tokens. At Opus rates that's <code>50,000 × $15/1M + 4,000 × $75/1M = $0.75 + $0.30 = $1.05 per turn</code>. Multiply by ~150 turns/day → ~$157/day.
+      That's why the per-million rates feel small but the bill isn't.
+    </div>
+
+    <div class="price-axes">
+      <div class="price-axis">
+        <div class="axis-mult">1.00×</div>
+        <div class="axis-name">📥 Input</div>
+        <div class="axis-rate">$15 per 1M tokens</div>
+        <div class="axis-desc">Everything you send: messages + system + tools + cache_creation prefix. Billed per token, not per call.</div>
+      </div>
+      <div class="price-axis">
+        <div class="axis-mult high">5.00×</div>
+        <div class="axis-name">📤 Output</div>
+        <div class="axis-rate">$75 per 1M tokens</div>
+        <div class="axis-desc">Tokens the model generates. <strong>5× the input rate</strong> — the most expensive axis per token.</div>
+      </div>
+      <div class="price-axis">
+        <div class="axis-mult med">1.25×</div>
+        <div class="axis-name">💾 Cache write</div>
+        <div class="axis-rate">$18.75 per 1M tokens</div>
+        <div class="axis-desc">First-time prefix caching (<code>cache_creation_input_tokens</code>). One-time premium per cache entry.</div>
+      </div>
+      <div class="price-axis">
+        <div class="axis-mult low">0.10×</div>
+        <div class="axis-name">⚡ Cache read</div>
+        <div class="axis-rate">$1.50 per 1M tokens</div>
+        <div class="axis-desc">Subsequent reads on cached prefix (<code>cache_read_input_tokens</code>). 10× discount vs base input.</div>
+      </div>
+      <div class="price-axis">
+        <div class="axis-mult low">15× / 5× / 1×</div>
+        <div class="axis-name">🎚️ Tier</div>
+        <div class="axis-rate">Opus / Sonnet / Haiku</div>
+        <div class="axis-desc">Whole-table multiplier. Opus is 15× Haiku at every axis above. Sonnet is 3× Haiku.</div>
+      </div>
+    </div>
+
+    <h2 id="matrix">The matrix — which strategy hits which axis</h2>
+
+    <div class="matrix-legend">
+      <div class="lg-item"><span class="lg-sw primary"></span> primary lever (the strategy's main mechanism)</div>
+      <div class="lg-item"><span class="lg-sw secondary"></span> secondary save (helps as a side effect)</div>
+      <div class="lg-item"><span class="lg-sw caution"></span> one-time cost / careful (e.g. cache rebuild)</div>
+      <div class="lg-item"><span class="lg-sw none"></span> no direct effect</div>
+    </div>
+
+    <div class="matrix-grid">
+      <!-- Header row -->
+      <div class="matrix-cell head"></div>
+      <div class="matrix-cell head">📥 Input<br><span style="font-weight:400;color:var(--accent-2);">$15 / 1M tokens</span></div>
+      <div class="matrix-cell head">📤 Output<br><span style="font-weight:400;color:var(--bad);">$75 / 1M tokens</span></div>
+      <div class="matrix-cell head">💾 Cache write<br><span style="font-weight:400;color:var(--warn);">$18.75 / 1M tokens</span></div>
+      <div class="matrix-cell head">⚡ Cache read<br><span style="font-weight:400;color:var(--good);">$1.50 / 1M tokens</span></div>
+      <div class="matrix-cell head">🎚️ Tier<br><span style="font-weight:400;color:var(--muted);">Opus/Sonnet/Haiku</span></div>
+
+      <!-- Row 1: BanditRouter -->
+      <div class="matrix-cell row-head">1. BanditRouter <div class="row-sub">model tier router</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">cheaper tier rate</div>
+        <div class="matrix-tt"><strong>Indirect.</strong> Routing to Haiku/Sonnet means the input rate falls 5–15× — but bandit doesn't <em>shrink</em> input, just changes which rate applies.</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦</div><div class="cell-note">5–15× cheaper</div>
+        <div class="matrix-tt"><strong>Primary win.</strong> Output is the most expensive axis. Routing Opus → Sonnet drops output billing 5×; Opus → Haiku drops it 15×.</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">cheaper tier</div>
+        <div class="matrix-tt"><strong>Indirect.</strong> Cache write tracks input rate, so cheaper tier = cheaper cache writes too.</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">cheaper tier</div>
+        <div class="matrix-tt"><strong>Indirect.</strong> Same — cache reads are 0.1× input rate of whatever model is billed.</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">PRIMARY LEVER</div>
+        <div class="matrix-tt"><strong>The whole point.</strong> Bandit picks a tier; everything else (input/output/cache rates) is consequential.</div></div>
+
+      <!-- Row 2: TranscriptCompactor -->
+      <div class="matrix-cell row-head">2. TranscriptCompactor <div class="row-sub">sliding-window prefix compaction</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">smaller first turn</div>
+        <div class="matrix-tt"><strong>Secondary.</strong> Smaller prefix on the rollover turn means fewer non-cached input tokens that turn.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div>
+        <div class="matrix-tt">Output tokens not affected.</div></div>
+      <div class="matrix-cell caution"><div class="cell-icon">⚠</div><div class="cell-note">one-time cost</div>
+        <div class="matrix-tt"><strong>Cost.</strong> Each rollover invalidates the prior cache and triggers a fresh cache_creation at 1.25× rate. That's the price you pay once per rollover.</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">RECURRING — every turn</div>
+        <div class="matrix-tt"><strong>Primary win.</strong> After the rollover, every cache-hit turn reads (dropped_tokens − summary_tokens) fewer bytes at the 0.1× rate. Recurring savings until the next rollover.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div>
+        <div class="matrix-tt">Tier-agnostic; works on any model.</div></div>
+
+      <!-- Row 3: ExactMatchCache -->
+      <div class="matrix-cell row-head">3. ExactMatchCache <div class="row-sub">local response cache</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">whole call skipped</div>
+        <div class="matrix-tt"><strong>Primary.</strong> On a cache hit, no upstream call → 0 input tokens billed.</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">whole call skipped</div>
+        <div class="matrix-tt"><strong>Primary.</strong> 0 output tokens billed either. <em>This is the only strategy that cuts both axes equally.</em></div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦</div><div class="cell-note">no Anthropic write</div>
+        <div class="matrix-tt"><strong>Save.</strong> Anthropic-side cache_creation also doesn't fire on a hit — no premium paid.</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦</div><div class="cell-note">no Anthropic read</div>
+        <div class="matrix-tt"><strong>Save.</strong> No upstream call = no Anthropic-side cache_read either.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div>
+        <div class="matrix-tt">Saves at the original tier's rate — doesn't change which tier is used.</div></div>
+
+      <!-- Row 4: ToolOutputCompressor -->
+      <div class="matrix-cell row-head">4. ToolOutputCompressor <div class="row-sub">tool_result trim & ANSI strip</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">PRIMARY — last-msg only</div>
+        <div class="matrix-tt"><strong>Primary win.</strong> Every <code>tool_result</code> in the latest message gets head/tail-trimmed and ANSI-stripped — fewer input tokens shipped upstream.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div>
+        <div class="matrix-tt">Output not directly affected (smaller context can indirectly help model focus).</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">smaller cache</div>
+        <div class="matrix-tt"><strong>Secondary.</strong> Compressed bytes carry into the cache, so cache_creation writes fewer tokens at the 1.25× rate.</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">smaller reads</div>
+        <div class="matrix-tt"><strong>Secondary.</strong> Every subsequent cache-hit turn reads fewer compressed bytes at 0.1× rate. Compounds with TranscriptCompactor.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+
+      <!-- Row 5: OutputController -->
+      <div class="matrix-cell row-head">5. OutputController <div class="row-sub">turn-class-aware max_tokens cap</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div>
+        <div class="matrix-tt">Doesn't change input — only the cap on what the model is allowed to generate.</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">PRIMARY — 5× rate</div>
+        <div class="matrix-tt"><strong>Primary win.</strong> Caps <code>max_tokens</code> based on turn class (qa→800, tool→2000). Output is the most expensive axis at 5× input — every truncated token is the highest-value save.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+
+      <!-- Row 6: SkillLoader -->
+      <div class="matrix-cell row-head">6. SkillLoader <div class="row-sub">trim irrelevant skill descriptions</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">PRIMARY — system block</div>
+        <div class="matrix-tt"><strong>Primary win.</strong> Drops irrelevant skill descriptions from the system prompt — fewer input tokens every turn.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+      <div class="matrix-cell caution"><div class="cell-icon">⚠</div><div class="cell-note">cache rebuild</div>
+        <div class="matrix-tt"><strong>Caution.</strong> Changing the system block changes the cache key on subsequent turns where a different set of skills got pruned. That can force a cache rebuild — needs careful query-stability testing.</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">smaller reads</div>
+        <div class="matrix-tt"><strong>Secondary.</strong> When the system block is byte-stable across turns, every cache read is smaller.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+
+      <!-- Row 7: BigMemoryInject -->
+      <div class="matrix-cell row-head">7. BigMemoryInject <div class="row-sub">session-stable memory injection</div></div>
+      <div class="matrix-cell caution"><div class="cell-icon">⚠</div><div class="cell-note">adds tokens!</div>
+        <div class="matrix-tt"><strong>Net add to input.</strong> This strategy <em>injects</em> a memory block into the system prompt — adds tokens. The bet is the avoided MCP <code>memory_search</code> calls (each its own input bill) outweigh the inline cost.</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">indirect: better grounding</div>
+        <div class="matrix-tt"><strong>Indirect.</strong> Better-grounded answers can mean shorter, more correct outputs (no second-guess clarification turns).</div></div>
+      <div class="matrix-cell caution"><div class="cell-icon">⚠</div><div class="cell-note">one cache rebuild</div>
+        <div class="matrix-tt"><strong>Caution.</strong> First turn of a new session writes a cache_creation. After that, the snapshot is byte-stable.</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦</div><div class="cell-note">stable bytes → cache hits</div>
+        <div class="matrix-tt"><strong>Win.</strong> The clever bit: keying on session_hash makes the snapshot byte-identical across turns, so Anthropic's prompt cache keeps hitting at 0.1× rate.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+
+      <!-- Row 8: ToolResultDedup -->
+      <div class="matrix-cell row-head">8. ToolResultDedup <div class="row-sub">stub repeated tool_result content</div></div>
+      <div class="matrix-cell primary"><div class="cell-icon">✦✦</div><div class="cell-note">PRIMARY — repeated reads</div>
+        <div class="matrix-tt"><strong>Primary win.</strong> When the agent re-reads a file, the prior <code>tool_result</code> is already in the messages array. Replace later identical copies with a small stub.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">smaller writes</div>
+        <div class="matrix-tt"><strong>Secondary.</strong> Stubbed bodies cache smaller — cache_creation tokens go down on rollover.</div></div>
+      <div class="matrix-cell secondary"><div class="cell-icon">●</div><div class="cell-note">smaller reads</div>
+        <div class="matrix-tt"><strong>Secondary.</strong> Every cache-hit turn reads the stubbed bytes instead of the full tool_results. Compounds.</div></div>
+      <div class="matrix-cell none"><div class="cell-icon">—</div></div>
+    </div>
+
+    <div class="callout">
+      <strong>Read it like a heatmap:</strong> the green column under <strong>Cache read</strong> is wider than any other — that's because most of tokenq's strategies leave a smaller prefix behind, which compounds on every subsequent turn at the cheap 0.1× rate. The Output column is concentrated on just <strong>BanditRouter</strong>, <strong>OutputController</strong>, and <strong>ExactMatchCache</strong> — those are your three direct levers on the most expensive axis.
+    </div>
+
+    <h2 id="real-math">📐 Where the $271.70 actually went (last 7d)</h2>
+    <p class="muted">
+      From <code>requests</code> table over the last 7 days, decomposed by pricing axis. This is what tokenq is up against —
+      and where the realized $7.06 saving came from.
+    </p>
+
+    <div class="panel">
+      <div class="pricing-math">
+        <div class="row">
+          <span class="lbl">📥 input tokens</span>
+          <span class="formula">691,673 tokens × $15 / 1M (Opus-weighted)</span>
+          <span class="val">$10.37</span>
+        </div>
+        <div class="row">
+          <span class="lbl">📤 output tokens</span>
+          <span class="formula">743,145 tokens × $75 / 1M</span>
+          <span class="val red">$55.74</span>
+        </div>
+        <div class="row">
+          <span class="lbl">💾 cache_creation</span>
+          <span class="formula">3,217,767 tokens × $18.75 / 1M</span>
+          <span class="val">$60.33</span>
+        </div>
+        <div class="row">
+          <span class="lbl">⚡ cache_read</span>
+          <span class="formula">109,192,803 tokens × $1.50 / 1M</span>
+          <span class="val">$163.79</span>
+        </div>
+        <div class="row total">
+          <span class="lbl">total billed (7d)</span>
+          <span class="formula">— actually charged by Anthropic —</span>
+          <span class="val">$271.70</span>
+        </div>
+        <div class="row total" style="border-top: 2px solid var(--good);">
+          <span class="lbl" style="color:var(--good)">tokenq saved</span>
+          <span class="formula">priced via _saved_usd_for_row + saved_by_bandit_usd</span>
+          <span class="val green">−$7.06</span>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 14px;">
+        <strong>Surprise insight:</strong> 60% of the spend ($163.79 / $271.70) is <strong>cache reads</strong> — not output, not input.
+        That's because Claude Code sends the same long prefix every turn and cache reads compound. <em>This is exactly why
+        TranscriptCompactor and the cache-stability tricks (BigMemoryInject, byte-stable compression) matter most.</em> Cutting
+        cache-read bytes by 30% would save ~$49 here. Output is only 20% of spend on this workload — capping output buys less than expected.
+      </div>
+    </div>
+
+    <h2>🧩 How they compound</h2>
+    <div class="panel">
+      <div class="dec-step">
+        <div class="dec-q">1. Strategies stack along the cache axis.</div>
+        <div class="dec-a">Compactor + Compressor + Dedup + SkillLoader all leave smaller bytes behind. Every cache_read benefits from <em>all of them at once</em>, multiplied by the number of cache-hit turns. That's why the cache-read axis (the cheap one) is the largest savings opportunity in absolute dollars.</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">2. ExactMatchCache short-circuits everything.</div>
+        <div class="dec-a">A hit means no upstream call at all — saves on every axis simultaneously. But hits are rare on agentic workloads (most prompts differ in some byte). Best for templated/Q&A flows.</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">3. BanditRouter multiplies all of the above.</div>
+        <div class="dec-a">Routing Opus → Sonnet doesn't <em>shrink</em> any axis, but it changes which rate applies — so every input/output/cache token costs 1/5. Stack with the trim strategies for compounding wins.</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">4. OutputController is the only direct attack on output.</div>
+        <div class="dec-a">Every other strategy nibbles at input/cache axes. Output is 5× input, but it's a smaller fraction of the bill on cache-heavy agent workloads (~20% on this 7d sample). Highest-leverage on Q&A workloads where cache reuse is low.</div>
+      </div>
+      <div class="dec-step">
+        <div class="dec-q">5. Cache rebuilds are the only "watch out".</div>
+        <div class="dec-a">Compactor rollovers, SkillLoader changes to system, BigMemoryInject first-turn — each forces one Anthropic-side cache_creation at the 1.25× rate. The recurring 0.1× cache_read savings have to outweigh that one-time cost. The default thresholds are tuned so this almost always wins, but it's the trade-off to watch when tightening parameters.</div>
+      </div>
     </div>
 
     <p class="muted" style="margin-top: 48px; font-size: 13px; text-align: center;">
@@ -3961,6 +5206,29 @@ $('btn-dedup-run').addEventListener('click', () => {
 });
 $('btn-dedup-reset').addEventListener('click', () => renderDedup('before'));
 renderDedup('before');
+
+// ============================================================
+// ARCHITECTURE VIEW TOGGLE
+// ============================================================
+const archAws = $('arch-aws');
+const archBoxes = $('arch-boxes');
+const btnAws = $('btn-view-aws');
+const btnBoxes = $('btn-view-boxes');
+function setArchView(which) {
+  if (which === 'aws') {
+    archAws.classList.add('show');
+    archBoxes.classList.remove('show');
+    btnAws.classList.add('active');
+    btnBoxes.classList.remove('active');
+  } else {
+    archBoxes.classList.add('show');
+    archAws.classList.remove('show');
+    btnBoxes.classList.add('active');
+    btnAws.classList.remove('active');
+  }
+}
+btnAws.addEventListener('click', () => setArchView('aws'));
+btnBoxes.addEventListener('click', () => setArchView('boxes'));
 
 // ============================================================
 // DASHBOARD TOOLTIPS
